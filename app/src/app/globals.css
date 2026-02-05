@@ -142,3 +142,125 @@ body {
   font-size: 13px;
   font-weight: 500;
 }
+
+/* MOEDA SUGERIDA - DESIGN EXATO */
+.suggested-currency {
+  width: 100%;
+  padding: 22px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #0e1e3d, #09142d);
+  box-shadow: 0 0 50px rgba(0, 200, 255, 0.12);
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.suggested-currency .top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.suggested-currency h1 {
+  text-align: center;
+  font-size: 42px;
+  margin: 14px 0 6px;
+  font-weight: 900;
+}
+
+.suggested-currency .status {
+  margin: 0 auto;
+  width: fit-content;
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: rgba(255, 90, 90, 0.15);
+  color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.suggested-currency .progress-ring {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 20px auto;
+}
+
+.suggested-currency .progress-ring svg {
+  transform: rotate(-90deg);
+}
+
+.suggested-currency .progress-ring circle {
+  fill: none;
+  stroke-width: 10;
+  cx: 85;
+  cy: 85;
+  r: 72;
+}
+
+.suggested-currency .progress-ring circle:first-child {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.suggested-currency .progress-ring circle:last-child {
+  stroke: #1de9ff;
+  stroke-dasharray: 452;
+  stroke-dashoffset: 59;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px #1de9ff);
+}
+
+.suggested-currency .value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: #1de9ff;
+}
+
+.suggested-currency .subtitle {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 10px;
+}
+
+.suggested-currency .pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.suggested-currency .pair {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.suggested-currency .pair span {
+  font-size: 14px;
+}
+
+.suggested-currency .pair span::before {
+  content: "•";
+  color: #1de9ff;
+  margin-right: 8px;
+}
+
+.suggested-currency .pair button {
+  background: rgba(0, 255, 150, 0.15);
+  color: #00ff9c;
+  border: 1px solid rgba(0, 255, 150, 0.35);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.suggested-currency .pair button:hover {
+  background: rgba(0, 255, 150, 0.25);
+  box-shadow: 0 0 10px rgba(0, 255, 150, 0.3);
+}
