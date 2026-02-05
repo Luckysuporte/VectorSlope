@@ -32,9 +32,9 @@ const CurrencyStrengthMeter = () => {
     };
 
     return (
-        <div className="w-full p-6 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white">
+        <div className="w-full p-8 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-10">
                 <h2 className="text-sm font-black tracking-wider uppercase">
                     FORÇA DAS MOEDAS
                 </h2>
@@ -44,16 +44,16 @@ const CurrencyStrengthMeter = () => {
                 </div>
             </div>
 
-            {/* Grid de Moedas */}
-            <div className="space-y-5">
+            {/* Grid de Moedas - Espaçamento grande entre linhas */}
+            <div className="space-y-8">
                 {currencies.map((curr) => (
                     <div key={curr.name} className="relative">
-                        <div className="flex justify-between items-center mb-1.5">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] text-slate-500 font-bold uppercase">{curr.code}</span>
-                                <span className="text-sm font-bold">{curr.name}</span>
+                        <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center gap-4">
+                                <span className="text-[11px] text-slate-500 font-bold uppercase">{curr.code}</span>
+                                <span className="text-[15px] font-black">{curr.name}</span>
                             </div>
-                            <span className={`text-sm font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`text-[15px] font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {curr.value >= 0 ? `+${curr.value.toFixed(2)}` : curr.value.toFixed(2)}
                             </span>
                         </div>
@@ -71,7 +71,7 @@ const CurrencyStrengthMeter = () => {
             </div>
 
             {/* Escala */}
-            <div className="flex justify-between mt-6 text-[10px] font-bold text-slate-600">
+            <div className="flex justify-between mt-10 text-[11px] font-bold text-slate-600">
                 <span>-1.0</span>
                 <span>-0.5</span>
                 <span className="text-slate-500">0</span>
