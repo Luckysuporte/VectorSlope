@@ -47,27 +47,24 @@ const TopCurrencies = () => {
                     </div>
                 </div>
 
-                {/* Legend - com grid para controlar o espaçamento */}
-                <div className="flex-1 grid grid-cols-[auto_1fr_auto] gap-x-6 gap-y-4 items-center">
+                {/* Legend - Distribuição entre esquerda e direita */}
+                <div className="flex-1 space-y-4">
                     {data.map((item) => (
-                        <>
-                            {/* Coluna 1: Indicador + Nome */}
-                            <div className="flex items-center gap-3" key={`${item.name}-label`}>
+                        <div key={item.name} className="flex items-center justify-between w-full">
+                            {/* Nome com indicador - lado esquerdo */}
+                            <div className="flex items-center gap-3">
                                 <div
                                     className="w-3.5 h-3.5 rounded-full shadow-lg"
                                     style={{ backgroundColor: item.color }}
                                 ></div>
-                                <span className="text-[13px] font-black text-white tracking-tight whitespace-nowrap">{item.name}</span>
+                                <span className="text-[13px] font-black text-white tracking-tight">{item.name}</span>
                             </div>
 
-                            {/* Coluna 2: Espaço vazio (o quadrado vermelho) */}
-                            <div key={`${item.name}-spacer`}></div>
-
-                            {/* Coluna 3: Porcentagem */}
-                            <span className="text-[13px] font-black text-cyan-400 text-right" key={`${item.name}-value`}>
+                            {/* Porcentagem - lado direito (conforme seta vermelha) */}
+                            <span className="text-[13px] font-black text-cyan-400">
                                 {item.value}%
                             </span>
-                        </>
+                        </div>
                     ))}
                 </div>
             </div>
