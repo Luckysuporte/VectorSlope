@@ -33,7 +33,7 @@ const UploadPanel = () => {
             </div>
 
             <div className="upload-drop">
-                <div className="text-2xl mb-1">⬆️</div>
+                <span className="arrow">⬆️</span>
                 <p>Arraste arquivos ou clique para selecionar</p>
             </div>
         </div>
