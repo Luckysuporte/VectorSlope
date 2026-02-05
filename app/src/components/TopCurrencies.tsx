@@ -9,12 +9,13 @@ const TopCurrencies = () => {
     ];
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-white mb-6">TOP 3 MOEDAS</h2>
+        <div className="w-full p-6 rounded-[24px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
+            <h2 className="text-[15px] font-black tracking-widest mb-8 uppercase">TOP 3 MOEDAS</h2>
 
-            <div className="flex items-center gap-8">
-                <div className="relative w-40 h-40">
-                    <svg viewBox="0 0 200 200" className="w-40 h-40 transform -rotate-90">
+            <div className="flex items-center gap-6">
+                {/* Donut Chart */}
+                <div className="relative w-36 h-36">
+                    <svg viewBox="0 0 200 200" className="w-36 h-36 transform -rotate-90">
                         {data.map((item, index) => {
                             const radius = 80;
                             const circumference = 2 * Math.PI * radius;
@@ -30,7 +31,7 @@ const TopCurrencies = () => {
                                     r={radius}
                                     fill="transparent"
                                     stroke={item.color}
-                                    strokeWidth="20"
+                                    strokeWidth="24"
                                     strokeDasharray={`${length} ${circumference}`}
                                     strokeDashoffset={-offset}
                                     className="transition-all duration-500"
@@ -40,21 +41,24 @@ const TopCurrencies = () => {
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-white">927</p>
-                            <p className="text-xs text-slate-400">dias</p>
+                            <p className="text-2xl font-black text-white leading-none">927</p>
+                            <p className="text-[11px] text-slate-500 font-bold uppercase mt-1">dias</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-3 flex-1">
+                {/* Legend */}
+                <div className="flex-1 space-y-4">
                     {data.map((item) => (
-                        <div key={item.name} className="flex items-center gap-3">
-                            <div
-                                className="w-3 h-3 rounded-full shadow-lg"
-                                style={{ backgroundColor: item.color }}
-                            ></div>
-                            <span className="text-sm font-semibold text-white flex-1">{item.name}</span>
-                            <span className="text-sm font-bold text-cyan-400">{item.value}%</span>
+                        <div key={item.name} className="flex items-center justify-between group cursor-default">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="w-3.5 h-3.5 rounded-full shadow-lg transition-transform group-hover:scale-110"
+                                    style={{ backgroundColor: item.color }}
+                                ></div>
+                                <span className="text-[13px] font-black text-white tracking-tight">{item.name}</span>
+                            </div>
+                            <span className="text-[13px] font-black text-cyan-400">{item.value}%</span>
                         </div>
                     ))}
                 </div>
