@@ -13,7 +13,7 @@ const CurrencyStrengthMeter = () => {
     ];
 
     const getBarStyles = (value: number) => {
-        const width = Math.abs(value) * 50; // 50% é o máximo para cada lado
+        const width = Math.abs(value) * 50;
         if (value >= 0) {
             return {
                 left: '50%',
@@ -33,10 +33,10 @@ const CurrencyStrengthMeter = () => {
 
     return (
         <div className="w-full p-6 rounded-[24px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
-            {/* Header */}
+            {/* Header - Uma linha só, centralizado */}
             <div className="flex items-center justify-between mb-8">
-                <h2 className="text-[15px] font-black tracking-wider leading-tight w-40">
-                    CURRENCY STRENGTH METER
+                <h2 className="text-[15px] font-black tracking-widest whitespace-nowrap">
+                    FORÇA DAS MOEDAS
                 </h2>
                 <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/30 px-3 py-1.5 rounded-full">
                     <span className="text-[10px] font-bold text-cyan-400">MNT W1 D1 H4</span>
@@ -60,10 +60,7 @@ const CurrencyStrengthMeter = () => {
 
                         {/* Barra de Progresso Centralizada */}
                         <div className="h-[6px] w-full bg-slate-800/50 rounded-full relative overflow-hidden">
-                            {/* Marcador Central */}
                             <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-slate-700 z-10"></div>
-
-                            {/* Barra de Força */}
                             <div
                                 className="absolute top-0 bottom-0 transition-all duration-500 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
                                 style={getBarStyles(curr.value)}
