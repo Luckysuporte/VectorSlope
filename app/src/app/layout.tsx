@@ -19,9 +19,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
           <Navbar />
-          <main className="flex-1 p-4 md:p-6">
+          <main className="p-6">
             {children}
           </main>
         </div>
