@@ -12,7 +12,7 @@ const TopCurrencies = () => {
         <div className="w-full p-6 rounded-[24px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
             <h2 className="text-[15px] font-black tracking-widest mb-8 uppercase">TOP 3 MOEDAS</h2>
 
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-6">
                 {/* Donut Chart */}
                 <div className="relative w-36 h-36 flex-shrink-0">
                     <svg viewBox="0 0 200 200" className="w-36 h-36 transform -rotate-90">
@@ -47,24 +47,27 @@ const TopCurrencies = () => {
                     </div>
                 </div>
 
-                {/* Legend - Com ajuste de distribuição para criar o vão central */}
-                <div className="flex-1 space-y-4 pr-1">
+                {/* Legend - com grid para controlar o espaçamento */}
+                <div className="flex-1 grid grid-cols-[auto_1fr_auto] gap-x-6 gap-y-4 items-center">
                     {data.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between group cursor-default">
-                            {/* Nome e Icone */}
-                            <div className="flex items-center gap-3">
+                        <>
+                            {/* Coluna 1: Indicador + Nome */}
+                            <div className="flex items-center gap-3" key={`${item.name}-label`}>
                                 <div
-                                    className="w-3.5 h-3.5 rounded-full shadow-lg transition-transform group-hover:scale-110"
+                                    className="w-3.5 h-3.5 rounded-full shadow-lg"
                                     style={{ backgroundColor: item.color }}
                                 ></div>
-                                <span className="text-[13px] font-black text-white tracking-tight">{item.name}</span>
+                                <span className="text-[13px] font-black text-white tracking-tight whitespace-nowrap">{item.name}</span>
                             </div>
 
-                            {/* Porcentagem colada na direita (conforme seta vermelha) */}
-                            <span className="text-[13px] font-black text-cyan-400 text-right min-w-[40px]">
+                            {/* Coluna 2: Espaço vazio (o quadrado vermelho) */}
+                            <div key={`${item.name}-spacer`}></div>
+
+                            {/* Coluna 3: Porcentagem */}
+                            <span className="text-[13px] font-black text-cyan-400 text-right" key={`${item.name}-value`}>
                                 {item.value}%
                             </span>
-                        </div>
+                        </>
                     ))}
                 </div>
             </div>
