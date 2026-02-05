@@ -2,19 +2,19 @@
 
 const HistoricalChoices = () => {
     const history = [
-        { date: '2026-02-04', pair: 'USDJPY', type: 'SELL', entry: 150.25, exit: 149.80, result: '+45', status: 'PROFIT' },
-        { date: '2026-02-03', pair: 'EURJPY', type: 'SELL', entry: 160.50, exit: 159.90, result: '+60', status: 'PROFIT' },
-        { date: '2026-02-02', pair: 'GBPJPY', type: 'SELL', entry: 188.30, exit: 187.85, result: '+45', status: 'PROFIT' },
-        { date: '2026-02-01', pair: 'AUDJPY', type: 'SELL', entry: 97.45, exit: 97.90, result: '-45', status: 'LOSS' },
-        { date: '2026-01-31', pair: 'NZDJPY', type: 'SELL', entry: 91.20, exit: 90.70, result: '+50', status: 'PROFIT' },
+        { date: '2026-02-04', pair: 'USDJPY', type: 'SELL', entry: 150.25, exit: 149.80, result: '+45', status: 'PROFIT', progress: 85 },
+        { date: '2026-02-03', pair: 'EURJPY', type: 'SELL', entry: 160.50, exit: 159.90, result: '+60', status: 'PROFIT', progress: 95 },
+        { date: '2026-02-02', pair: 'GBPJPY', type: 'SELL', entry: 188.30, exit: 187.85, result: '+45', status: 'PROFIT', progress: 85 },
+        { date: '2026-02-01', pair: 'AUDJPY', type: 'SELL', entry: 97.45, exit: 97.90, result: '-45', status: 'LOSS', progress: 30 },
+        { date: '2026-01-31', pair: 'NZDJPY', type: 'SELL', entry: 91.20, exit: 90.70, result: '+50', status: 'PROFIT', progress: 90 },
     ];
 
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-white">BONOTO&apos;S HISTORICAL CHOICES</h2>
-                <button className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors">
-                    Ver todos →
+                <button className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1">
+                    Ver todos <span>→</span>
                 </button>
             </div>
 
@@ -28,7 +28,7 @@ const HistoricalChoices = () => {
                             <th className="text-right py-3 px-2 text-slate-400 font-medium">Entrada</th>
                             <th className="text-right py-3 px-2 text-slate-400 font-medium">Saída</th>
                             <th className="text-right py-3 px-2 text-slate-400 font-medium">Result (Pips)</th>
-                            <th className="text-center py-3 px-2 text-slate-400 font-medium">Status</th>
+                            <th className="text-center py-3 px-2 text-slate-400 font-medium w-16"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -48,18 +48,49 @@ const HistoricalChoices = () => {
                                 <td className={`py-3 px-2 text-right font-bold ${trade.status === 'PROFIT' ? 'text-green-400' : 'text-red-400'}`}>
                                     {trade.result}
                                 </td>
-                                <td className="py-3 px-2 text-center">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${trade.status === 'PROFIT'
-                                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                        }`}>
-                                        {trade.status}
-                                    </span>
+                                <td className="py-3 px-2">
+                                    {/* Progress Circle */}
+                                    <div className="flex justify-center">
+                                        <div className="relative w-8 h-8">
+                                            <svg className="w-8 h-8 transform -rotate-90">
+                                                <circle
+                                                    cx="16"
+                                                    cy="16"
+                                                    r="12"
+                                                    stroke="currentColor"
+                                                    strokeWidth="3"
+                                                    fill="transparent"
+                                                    className="text-slate-700"
+                                                />
+                                                <circle
+                                                    cx="16"
+                                                    cy="16"
+                                                    r="12"
+                                                    stroke="currentColor"
+                                                    strokeWidth="3"
+                                                    fill="transparent"
+                                                    strokeDasharray={75.4}
+                                                    strokeDashoffset={75.4 - (75.4 * trade.progress / 100)}
+                                                    className={trade.status === 'PROFIT' ? 'text-cyan-400' : 'text-red-400'}
+                                                    strokeLinecap="round"
+                                                />
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Scrollbar indicator */}
+            <div className="mt-4 flex items-center justify-center gap-2">
+                <button className="text-slate-500 hover:text-white transition-colors">◀</button>
+                <div className="flex-1 max-w-xs h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-1/3 h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"></div>
+                </div>
+                <button className="text-slate-500 hover:text-white transition-colors">▶</button>
             </div>
         </div>
     );
