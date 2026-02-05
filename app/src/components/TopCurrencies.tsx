@@ -1,13 +1,13 @@
-'use client'
+'use client';
 
-const data = [
-    { name: 'JPY', value: 38, color: '#f97316' },
-    { name: 'GBP', value: 18, color: '#a855f7' },
-    { name: 'NZD', value: 16, color: '#22c55e' },
-    { name: 'OTHERS', value: 28, color: '#64748b' },
-]
+const TopCurrencies = () => {
+    const data = [
+        { name: 'JPY', value: 38, color: '#f97316' },
+        { name: 'GBP', value: 18, color: '#a855f7' },
+        { name: 'NZD', value: 16, color: '#22c55e' },
+        { name: 'OTHERS', value: 28, color: '#64748b' },
+    ];
 
-export default function TopCurrencies() {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-white mb-6">TOP 3 MOEDAS</h2>
@@ -16,11 +16,11 @@ export default function TopCurrencies() {
                 <div className="relative w-40 h-40">
                     <svg viewBox="0 0 200 200" className="w-40 h-40 transform -rotate-90">
                         {data.map((item, index) => {
-                            const radius = 80
-                            const circumference = 2 * Math.PI * radius
-                            const previousValues = data.slice(0, index).reduce((sum, d) => sum + d.value, 0)
-                            const offset = (previousValues / 100) * circumference
-                            const length = (item.value / 100) * circumference
+                            const radius = 80;
+                            const circumference = 2 * Math.PI * radius;
+                            const previousValues = data.slice(0, index).reduce((sum, d) => sum + d.value, 0);
+                            const offset = (previousValues / 100) * circumference;
+                            const length = (item.value / 100) * circumference;
 
                             return (
                                 <circle
@@ -35,7 +35,7 @@ export default function TopCurrencies() {
                                     strokeDashoffset={-offset}
                                     className="transition-all duration-500"
                                 />
-                            )
+                            );
                         })}
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -60,5 +60,7 @@ export default function TopCurrencies() {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default TopCurrencies;

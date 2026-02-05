@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { Database } from 'lucide-react'
+import { Database } from 'lucide-react';
 
-export default function SimilarPatterns() {
+const SimilarPatterns = () => {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
@@ -18,5 +18,7 @@ export default function SimilarPatterns() {
                 <Database className="w-12 h-12 text-cyan-400/50" />
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default SimilarPatterns;

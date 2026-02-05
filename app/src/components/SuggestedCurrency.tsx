@@ -1,10 +1,10 @@
-'use client'
+'use client';
 
-const pairs = [
-    'AUDJPY', 'CADJPY', 'CHFJPY', 'EURJPY', 'GBPJPY', 'NZDJPY', 'USDJPY'
-]
+const SuggestedCurrency = () => {
+    const pairs = [
+        'AUDJPY', 'CADJPY', 'CHFJPY', 'EURJPY', 'GBPJPY', 'NZDJPY', 'USDJPY'
+    ];
 
-export default function SuggestedCurrency() {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -22,7 +22,7 @@ export default function SuggestedCurrency() {
 
             <div className="flex justify-center mb-8">
                 <div className="relative w-40 h-40">
-                    <svg className="transform -rotate-90 w-40 h-40" viewBox="0 0 160 160">
+                    <svg className="transform -rotate-90 w-40 h-40">
                         <circle
                             cx="80"
                             cy="80"
@@ -66,5 +66,7 @@ export default function SuggestedCurrency() {
                 ))}
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default SuggestedCurrency;

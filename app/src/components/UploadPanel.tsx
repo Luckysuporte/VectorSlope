@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-import { Upload, FileText } from 'lucide-react'
+import { Upload, FileText } from 'lucide-react';
 
-const files = [
-    { name: 'MFC Noite', time: '20:30', icon: '🌙' },
-    { name: 'MFC Manhã', time: '06:30', icon: '☀️' },
-    { name: 'Resultado Bonoto', time: 'Portfolio do dia', icon: '📊' },
-]
+const UploadPanel = () => {
+    const files = [
+        { name: 'MFC Noite', time: '20:30', icon: '🌙' },
+        { name: 'MFC Manhã', time: '06:30', icon: '☀️' },
+        { name: 'Resultado Bonoto', time: 'Portfolio do dia', icon: '📊' },
+    ];
 
-export default function UploadPanel() {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-white mb-6">UPLOAD PANEL</h2>
@@ -35,5 +35,7 @@ export default function UploadPanel() {
                 <p className="text-sm text-slate-400">Arraste arquivos ou clique para selecionar</p>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default UploadPanel;

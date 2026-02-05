@@ -1,23 +1,23 @@
-'use client'
+'use client';
 
-const currencies = [
-    { code: 'GB', name: 'GBP', value: 0.68 },
-    { code: 'NZ', name: 'NZD', value: 0.51 },
-    { code: 'EU', name: 'EUR', value: 0.45 },
-    { code: 'AU', name: 'AUD', value: 0.32 },
-    { code: 'CA', name: 'CAD', value: 0.15 },
-    { code: 'CH', name: 'CHF', value: -0.05 },
-    { code: 'US', name: 'USD', value: -0.12 },
-    { code: 'JP', name: 'JPY', value: -0.77 },
-]
+const CurrencyStrengthMeter = () => {
+    const currencies = [
+        { code: 'GB', name: 'GBP', value: 0.68 },
+        { code: 'NZ', name: 'NZD', value: 0.51 },
+        { code: 'EU', name: 'EUR', value: 0.45 },
+        { code: 'AU', name: 'AUD', value: 0.32 },
+        { code: 'CA', name: 'CAD', value: 0.15 },
+        { code: 'CH', name: 'CHF', value: -0.05 },
+        { code: 'US', name: 'USD', value: -0.12 },
+        { code: 'JP', name: 'JPY', value: -0.77 },
+    ];
 
-const getBarColor = (value: number) => {
-    if (value > 0.3) return 'from-red-500 via-cyan-400 to-green-400'
-    if (value > 0) return 'from-red-500 via-cyan-400 to-green-400'
-    return 'from-red-500 to-orange-400'
-}
+    const getBarColor = (value: number) => {
+        if (value > 0.3) return 'from-red-500 via-cyan-400 to-green-400';
+        if (value > 0) return 'from-red-500 via-cyan-400 to-green-400';
+        return 'from-red-500 to-orange-400';
+    };
 
-export default function CurrencyStrengthMeter() {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -61,5 +61,7 @@ export default function CurrencyStrengthMeter() {
                 <span>+1.0</span>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default CurrencyStrengthMeter;

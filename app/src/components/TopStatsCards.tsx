@@ -1,29 +1,8 @@
-'use client'
+'use client';
 
-import { Database, CheckCircle } from 'lucide-react'
+import { Database, CheckCircle } from 'lucide-react';
 
-interface StatCardProps {
-    icon: React.ReactNode
-    label: string
-    value?: string
-    hideValue?: boolean
-}
-
-const StatCard = ({ icon, label, value, hideValue }: StatCardProps) => {
-    return (
-        <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-4 hover:border-cyan-500/40 transition-all group">
-            <div className="flex items-center justify-center mb-2 text-cyan-400 group-hover:text-cyan-300 transition-colors">
-                {icon}
-            </div>
-            <div className="text-center">
-                <p className="text-xs text-slate-400 mb-1">{label}</p>
-                {!hideValue && <p className="text-lg font-bold text-cyan-400">{value}</p>}
-            </div>
-        </div>
-    )
-}
-
-export default function TopStatsCards() {
+const TopStatsCards = () => {
     return (
         <div className="grid grid-cols-3 gap-4">
             <StatCard
@@ -48,5 +27,28 @@ export default function TopStatsCards() {
                 value="89%"
             />
         </div>
-    )
+    );
+};
+
+interface StatCardProps {
+    icon: React.ReactNode;
+    label: string;
+    value?: string;
+    hideValue?: boolean;
 }
+
+const StatCard = ({ icon, label, value, hideValue }: StatCardProps) => {
+    return (
+        <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-4 hover:border-cyan-500/40 transition-all group">
+            <div className="flex items-center justify-center mb-2 text-cyan-400 group-hover:text-cyan-300 transition-colors">
+                {icon}
+            </div>
+            <div className="text-center">
+                <p className="text-xs text-slate-400 mb-1">{label}</p>
+                {!hideValue && <p className="text-lg font-bold text-cyan-400">{value}</p>}
+            </div>
+        </div>
+    );
+};
+
+export default TopStatsCards;

@@ -1,14 +1,14 @@
-'use client'
+'use client';
 
-const history = [
-    { date: '2026-02-04', pair: 'USDJPY', type: 'SELL', entry: 150.25, exit: 149.80, result: '+45', status: 'PROFIT' },
-    { date: '2026-02-03', pair: 'EURJPY', type: 'SELL', entry: 160.50, exit: 159.90, result: '+60', status: 'PROFIT' },
-    { date: '2026-02-02', pair: 'GBPJPY', type: 'SELL', entry: 188.30, exit: 187.85, result: '+45', status: 'PROFIT' },
-    { date: '2026-02-01', pair: 'AUDJPY', type: 'SELL', entry: 97.45, exit: 97.90, result: '-45', status: 'LOSS' },
-    { date: '2026-01-31', pair: 'NZDJPY', type: 'SELL', entry: 91.20, exit: 90.70, result: '+50', status: 'PROFIT' },
-]
+const HistoricalChoices = () => {
+    const history = [
+        { date: '2026-02-04', pair: 'USDJPY', type: 'SELL', entry: 150.25, exit: 149.80, result: '+45', status: 'PROFIT' },
+        { date: '2026-02-03', pair: 'EURJPY', type: 'SELL', entry: 160.50, exit: 159.90, result: '+60', status: 'PROFIT' },
+        { date: '2026-02-02', pair: 'GBPJPY', type: 'SELL', entry: 188.30, exit: 187.85, result: '+45', status: 'PROFIT' },
+        { date: '2026-02-01', pair: 'AUDJPY', type: 'SELL', entry: 97.45, exit: 97.90, result: '-45', status: 'LOSS' },
+        { date: '2026-01-31', pair: 'NZDJPY', type: 'SELL', entry: 91.20, exit: 90.70, result: '+50', status: 'PROFIT' },
+    ];
 
-export default function HistoricalChoices() {
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -62,5 +62,7 @@ export default function HistoricalChoices() {
                 </table>
             </div>
         </div>
-    )
-}
+    );
+};
+
+export default HistoricalChoices;
