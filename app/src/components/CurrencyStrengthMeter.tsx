@@ -32,25 +32,25 @@ const CurrencyStrengthMeter = () => {
     };
 
     return (
-        <div className="w-full p-6 rounded-[24px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
-            {/* Header - Uma linha só, centralizado */}
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-[15px] font-black tracking-widest whitespace-nowrap">
+        <div className="w-full p-10 rounded-[28px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
+            {/* Header - Mais espaço interno */}
+            <div className="flex items-center justify-between mb-10 px-2">
+                <h2 className="text-[15px] font-black tracking-widest uppercase">
                     FORÇA DAS MOEDAS
                 </h2>
-                <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/30 px-3 py-1.5 rounded-full">
+                <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/30 px-4 py-2 rounded-full">
                     <span className="text-[10px] font-bold text-cyan-400">MNT W1 D1 H4</span>
                     <span className="text-xs">📊</span>
                 </div>
             </div>
 
-            {/* Grid de Moedas */}
-            <div className="space-y-6">
+            {/* Grid de Moedas com respiro horizontal */}
+            <div className="space-y-8 px-2">
                 {currencies.map((curr) => (
                     <div key={curr.name} className="relative">
-                        <div className="flex justify-between items-center mb-1">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] text-slate-500 font-bold uppercase">{curr.code}</span>
+                        <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center gap-4">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">{curr.code}</span>
                                 <span className="text-sm font-bold tracking-tight">{curr.name}</span>
                             </div>
                             <span className={`text-[13px] font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -71,7 +71,7 @@ const CurrencyStrengthMeter = () => {
             </div>
 
             {/* Escala no rodapé */}
-            <div className="flex justify-between mt-6 px-1 text-[10px] font-bold text-slate-600">
+            <div className="flex justify-between mt-8 px-4 text-[11px] font-bold text-slate-600">
                 <span>-1.0</span>
                 <span>-0.5</span>
                 <span className="text-slate-400">0</span>
