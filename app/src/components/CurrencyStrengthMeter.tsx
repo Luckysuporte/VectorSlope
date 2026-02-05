@@ -32,37 +32,37 @@ const CurrencyStrengthMeter = () => {
     };
 
     return (
-        <div className="w-full p-8 rounded-[32px] bg-[#0f172a] border border-white/5 shadow-2xl text-white overflow-hidden">
-            {/* Header - Com PX-6 para separar bem das bordas */}
-            <div className="flex items-center justify-between mb-10 px-6">
-                <h2 className="text-[14px] font-black tracking-widest uppercase text-white/90">
+        <div className="w-full p-6 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <h2 className="text-sm font-black tracking-wider uppercase">
                     FORÇA DAS MOEDAS
                 </h2>
-                <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/20 px-4 py-1.5 rounded-full">
+                <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/20 px-3 py-1.5 rounded-full">
                     <span className="text-[9px] font-bold text-cyan-400">MNT W1 D1 H4</span>
                     <span className="text-xs">📊</span>
                 </div>
             </div>
 
-            {/* Grid de Moedas com PX-8 para afastar totalmente das curvas do card */}
-            <div className="space-y-8 px-8">
+            {/* Grid de Moedas */}
+            <div className="space-y-5">
                 {currencies.map((curr) => (
                     <div key={curr.name} className="relative">
-                        <div className="flex justify-between items-center mb-2">
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">{curr.code}</span>
-                                <span className="text-[13px] font-black tracking-tight">{curr.name}</span>
+                        <div className="flex justify-between items-center mb-1.5">
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase">{curr.code}</span>
+                                <span className="text-sm font-bold">{curr.name}</span>
                             </div>
-                            <span className={`text-[13px] font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`text-sm font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                 {curr.value >= 0 ? `+${curr.value.toFixed(2)}` : curr.value.toFixed(2)}
                             </span>
                         </div>
 
-                        {/* Barra de Progresso Centralizada */}
-                        <div className="h-[6px] w-full bg-slate-800/40 rounded-full relative overflow-hidden">
-                            <div className="absolute left-1/2 top-0 bottom-0 w-[1.5px] bg-slate-700/50 z-10"></div>
+                        {/* Barra de Progresso */}
+                        <div className="h-[5px] w-full bg-slate-800/50 rounded-full relative overflow-hidden">
+                            <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-slate-700 z-10"></div>
                             <div
-                                className="absolute top-0 bottom-0 transition-all duration-700 shadow-[0_0_12px_rgba(34,211,238,0.15)]"
+                                className="absolute top-0 bottom-0 transition-all duration-500"
                                 style={getBarStyles(curr.value)}
                             ></div>
                         </div>
@@ -70,8 +70,8 @@ const CurrencyStrengthMeter = () => {
                 ))}
             </div>
 
-            {/* Escala no rodapé com PX-10 para alinhar com o conteúdo */}
-            <div className="flex justify-between mt-8 px-10 text-[10px] font-bold text-slate-600">
+            {/* Escala */}
+            <div className="flex justify-between mt-6 text-[10px] font-bold text-slate-600">
                 <span>-1.0</span>
                 <span>-0.5</span>
                 <span className="text-slate-500">0</span>
