@@ -38,11 +38,14 @@ INSERT INTO moedas (codigo, nome) VALUES
   ('NZD', 'Dólar Neozelandês')
 ON CONFLICT (codigo) DO NOTHING;
 
--- Tabela de análises diárias (slopes de cada moeda por timeframe)
-CREATE TABLE IF NOT EXISTS analises_diarias (
+-- ============================================
+-- MFC NOITE (Upload às 20:30)
+-- Slopes dos gráficos antes do Bonoto operar
+-- ============================================
+CREATE TABLE IF NOT EXISTS mfc_noite (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   data DATE NOT NULL,
-  timeframe TEXT NOT NULL REFERENCES timeframes(codigo),
+  timeframe TEXT NOT NULL,
   usd DECIMAL(5,2),
   eur DECIMAL(5,2),
   gbp DECIMAL(5,2),
@@ -55,30 +58,46 @@ CREATE TABLE IF NOT EXISTS analises_diarias (
   UNIQUE(data, timeframe)
 );
 
--- Tabela de histórico MFC (resultado do dia)
-CREATE TABLE IF NOT EXISTS historico_mfc (
+-- ============================================
+-- MFC MANHÃ (Upload às 06:30)
+-- Slopes dos gráficos após fechamento
+-- ============================================
+CREATE TABLE IF NOT EXISTS mfc_manha (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  data DATE NOT NULL,
+  timeframe TEXT NOT NULL,
+  usd DECIMAL(5,2),
+  eur DECIMAL(5,2),
+  gbp DECIMAL(5,2),
+  chf DECIMAL(5,2),
+  jpy DECIMAL(5,2),
+  aud DECIMAL(5,2),
+  cad DECIMAL(5,2),
+  nzd DECIMAL(5,2),
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(data, timeframe)
+);
+
+-- ============================================
+-- RESULTADO BONOTO (Portfolio do dia)
+-- Resultado das operações do Bonoto
+-- ============================================
+CREATE TABLE IF NOT EXISTS resultado_bonoto (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   data DATE NOT NULL UNIQUE,
-  moeda_vencedora TEXT NOT NULL REFERENCES moedas(codigo),
+  moeda TEXT NOT NULL,
   configuracao TEXT NOT NULL CHECK (configuracao IN ('Força', 'Fraqueza')),
-  pontos INTEGER NOT NULL,
+  lucro_total DECIMAL(15,2) NOT NULL,
+  qtd_trades INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Tabela de padrões identificados
-CREATE TABLE IF NOT EXISTS padroes (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  nome TEXT NOT NULL,
-  descricao TEXT,
-  moeda TEXT NOT NULL REFERENCES moedas(codigo),
-  configuracao TEXT NOT NULL CHECK (configuracao IN ('Força', 'Fraqueza')),
-  taxa_acerto DECIMAL(5,2),
-  total_ocorrencias INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Índices para performance
-CREATE INDEX IF NOT EXISTS idx_analises_data ON analises_diarias(data);
-CREATE INDEX IF NOT EXISTS idx_analises_timeframe ON analises_diarias(timeframe);
-CREATE INDEX IF NOT EXISTS idx_historico_data ON historico_mfc(data);
-CREATE INDEX IF NOT EXISTS idx_historico_moeda ON historico_mfc(moeda_vencedora);
+-- ============================================
+-- ÍNDICES PARA PERFORMANCE
+-- ============================================
+CREATE INDEX IF NOT EXISTS idx_mfc_noite_data ON mfc_noite(data);
+CREATE INDEX IF NOT EXISTS idx_mfc_noite_timeframe ON mfc_noite(timeframe);
+CREATE INDEX IF NOT EXISTS idx_mfc_manha_data ON mfc_manha(data);
+CREATE INDEX IF NOT EXISTS idx_mfc_manha_timeframe ON mfc_manha(timeframe);
+CREATE INDEX IF NOT EXISTS idx_resultado_data ON resultado_bonoto(data);
+CREATE INDEX IF NOT EXISTS idx_resultado_moeda ON resultado_bonoto(moeda);
