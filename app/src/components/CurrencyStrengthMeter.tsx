@@ -12,51 +12,72 @@ const CurrencyStrengthMeter = () => {
         { code: 'JP', name: 'JPY', value: -0.77 },
     ];
 
-    const getBarColor = (value: number) => {
-        if (value > 0.3) return 'from-red-500 via-cyan-400 to-green-400';
-        if (value > 0) return 'from-red-500 via-cyan-400 to-green-400';
-        return 'from-red-500 to-orange-400';
+    const getBarStyles = (value: number) => {
+        const width = Math.abs(value) * 50; // 50% é o máximo para cada lado
+        if (value >= 0) {
+            return {
+                left: '50%',
+                width: `${width}%`,
+                background: 'linear-gradient(90deg, #ef4444 0%, #22d3ee 50%, #22c55e 100%)',
+                borderRadius: '0 4px 4px 0'
+            };
+        } else {
+            return {
+                right: '50%',
+                width: `${width}%`,
+                background: 'linear-gradient(270deg, #f97316 0%, #ef4444 100%)',
+                borderRadius: '4px 0 0 4px'
+            };
+        }
     };
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-white">CURRENCY STRENGTH METER</h2>
-                <span className="text-xs text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30">
-                    MNT W1 D1 H4 📊
-                </span>
+        <div className="w-full p-6 rounded-[24px] bg-[#0f172a] border border-white/5 shadow-2xl text-white">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <h2 className="text-[15px] font-black tracking-wider leading-tight w-40">
+                    CURRENCY STRENGTH METER
+                </h2>
+                <div className="flex items-center gap-2 bg-[#1e293b] border border-cyan-500/30 px-3 py-1.5 rounded-full">
+                    <span className="text-[10px] font-bold text-cyan-400">MNT W1 D1 H4</span>
+                    <span className="text-xs">📊</span>
+                </div>
             </div>
 
-            <div className="space-y-4">
-                {currencies.map((currency) => (
-                    <div key={currency.code} className="space-y-2">
-                        <div className="flex items-center justify-between">
+            {/* Grid de Moedas */}
+            <div className="space-y-6">
+                {currencies.map((curr) => (
+                    <div key={curr.name} className="relative">
+                        <div className="flex justify-between items-center mb-1">
                             <div className="flex items-center gap-3">
-                                <span className="text-xs text-slate-400 w-6">{currency.code}</span>
-                                <span className="text-sm font-semibold text-white w-10">{currency.name}</span>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase">{curr.code}</span>
+                                <span className="text-sm font-bold tracking-tight">{curr.name}</span>
                             </div>
-                            <span className={`text-sm font-bold ${currency.value > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {currency.value > 0 ? '+' : ''}{currency.value.toFixed(2)}
+                            <span className={`text-[13px] font-black ${curr.value >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {curr.value >= 0 ? `+${curr.value.toFixed(2)}` : curr.value.toFixed(2)}
                             </span>
                         </div>
-                        <div className="relative h-2 bg-slate-800/50 rounded-full overflow-hidden">
-                            <div className="absolute inset-y-0 left-1/2 w-px bg-slate-600 z-10"></div>
+
+                        {/* Barra de Progresso Centralizada */}
+                        <div className="h-[6px] w-full bg-slate-800/50 rounded-full relative overflow-hidden">
+                            {/* Marcador Central */}
+                            <div className="absolute left-1/2 top-0 bottom-0 w-[2px] bg-slate-700 z-10"></div>
+
+                            {/* Barra de Força */}
                             <div
-                                className={`absolute inset-y-0 h-full bg-gradient-to-r ${getBarColor(currency.value)} rounded-full transition-all duration-500 shadow-lg shadow-cyan-500/50`}
-                                style={{
-                                    left: currency.value < 0 ? `${50 + (currency.value * 50)}%` : '50%',
-                                    width: `${Math.abs(currency.value) * 50}%`,
-                                }}
+                                className="absolute top-0 bottom-0 transition-all duration-500 shadow-[0_0_10px_rgba(34,211,238,0.2)]"
+                                style={getBarStyles(curr.value)}
                             ></div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="flex justify-between text-xs text-slate-500 mt-4 px-2">
+            {/* Escala no rodapé */}
+            <div className="flex justify-between mt-6 px-1 text-[10px] font-bold text-slate-600">
                 <span>-1.0</span>
                 <span>-0.5</span>
-                <span>0</span>
+                <span className="text-slate-400">0</span>
                 <span>+0.5</span>
                 <span>+1.0</span>
             </div>
