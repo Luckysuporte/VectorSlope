@@ -25,27 +25,27 @@ const UploadPanel = () => {
     ];
 
     return (
-        <div className="w-full p-[20px] rounded-[18px] bg-gradient-to-b from-[#0f1f3f] to-[#0a1530] shadow-[0_0_40px_rgba(0,140,255,0.15)] text-white">
-            <h2 className="mb-[18px] font-bold text-[16px] tracking-wider">UPLOAD PANEL</h2>
+        <div className="w-full p-6 rounded-2xl bg-gradient-to-b from-[#0f1f3f] to-[#0a1530] border border-cyan-500/10 shadow-2xl text-white">
+            <h2 className="mb-5 font-bold text-sm tracking-widest text-slate-200">UPLOAD PANEL</h2>
 
-            <div className="space-y-[12px]">
+            <div className="space-y-3">
                 {files.map((file, index) => (
-                    <div key={index} className="flex items-center bg-gradient-to-b from-[#122b55] to-[#0c1f3f] rounded-[14px] p-[14px]">
-                        <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center text-[20px] mr-[12px] ${file.bg}`}>
+                    <div key={index} className="flex items-center bg-gradient-to-b from-[#122b55] to-[#0c1f3f] rounded-xl p-3 border border-white/5 hover:border-cyan-500/30 transition-all cursor-pointer group">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl mr-3 shadow-lg ${file.bg}`}>
                             {file.icon}
                         </div>
                         <div className="flex-1">
-                            <strong className="block text-[14px] font-bold">{file.name}</strong>
-                            <span className="text-[12px] opacity-70 italic">{file.time}</span>
+                            <strong className="block text-sm font-semibold group-hover:text-cyan-400 transition-colors uppercase tracking-tight">{file.name}</strong>
+                            <span className="text-[11px] text-slate-400">{file.time}</span>
                         </div>
-                        <FileText className="w-[18px] h-[18px] opacity-70 text-cyan-400" />
+                        <FileText className="w-5 h-5 text-cyan-400/50 group-hover:text-cyan-400 transition-colors" />
                     </div>
                 ))}
             </div>
 
-            <div className="mt-[16px] p-[26px_16px] border-2 border-dashed border-[#1ec8ff] rounded-[14px] text-center text-[#9ee7ff] cursor-pointer hover:bg-cyan-500/5 transition-colors group">
-                <Upload className="w-6 h-6 mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                <p className="text-[13px]">Arraste arquivos ou clique para selecionar</p>
+            <div className="mt-4 p-6 border-2 border-dashed border-cyan-500/20 rounded-xl text-center text-cyan-400/70 hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all cursor-pointer group">
+                <Upload className="w-7 h-7 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-xs font-medium">Arraste arquivos ou clique para selecionar</p>
             </div>
         </div>
     );
