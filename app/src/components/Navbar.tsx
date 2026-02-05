@@ -23,13 +23,13 @@ const Navbar = () => {
                 </div>
 
                 {/* Menu Items */}
-                <div className="hidden md:flex items-center gap-1">
+                <div className="hidden md:flex items-center gap-6">
                     {menuItems.map((item) => (
                         <button
                             key={item.label}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${item.active
-                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]'
-                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             <item.icon className="w-4 h-4" />
