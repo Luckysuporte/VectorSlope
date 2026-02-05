@@ -10,23 +10,23 @@ import HistoricalChoices from '../components/HistoricalChoices';
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 w-full mb-10">
 
-      {/* Coluna Esquerda */}
-      <div className="space-y-6">
+      {/* Coluna Esquerda - Espaçamento aumentado entre blocos */}
+      <div className="flex flex-col gap-10">
         <CurrencyStrengthMeter />
         <TopCurrencies />
       </div>
 
-      {/* Coluna Central */}
-      <div className="space-y-6">
+      {/* Coluna Central - Espaçamento aumentado entre blocos */}
+      <div className="flex flex-col gap-10">
         <TopStatsCards />
         <SuggestedCurrency />
         <HistoricalChoices />
       </div>
 
-      {/* Coluna Direita */}
-      <div className="space-y-6">
+      {/* Coluna Direita - Espaçamento aumentado entre blocos */}
+      <div className="flex flex-col gap-10">
         <UploadPanel />
         <SimilarPatterns />
       </div>

@@ -1,40 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  /* Cores principais - Tema Futurista Ciano */
   --primary: #00D4FF;
-  --primary-dark: #00A3CC;
-  --primary-light: #5DE8FF;
-  --secondary: #00FF88;
-  --accent: #FF6B35;
-  --warning: #FFD93D;
-  --danger: #FF4757;
-  --success: #00FF88;
-
-  /* Backgrounds */
-  --bg-dark: #0A0E17;
-  --bg-card: #111827;
-  --bg-card-hover: #1a2235;
-  --bg-gradient: linear-gradient(135deg, #0A0E17 0%, #111827 50%, #0F172A 100%);
-
-  /* Borders */
-  --border-glow: rgba(0, 212, 255, 0.3);
-  --border-color: rgba(0, 212, 255, 0.2);
-
-  /* Text */
+  --bg-dark: #050b1e;
   --text-primary: #FFFFFF;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-
-  /* Moeda Colors */
-  --usd-color: #4CAF50;
-  --eur-color: #2196F3;
-  --gbp-color: #9C27B0;
-  --chf-color: #F44336;
-  --jpy-color: #FF9800;
-  --aud-color: #00BCD4;
-  --cad-color: #E91E63;
-  --nzd-color: #8BC34A;
 }
 
 * {
@@ -43,217 +12,115 @@
   padding: 0;
 }
 
-html,
-body {
-  height: 100%;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: #050b1e;
-  color: var(--text-primary);
-}
-
 body {
   background: radial-gradient(circle at top, #0b1c3d, #050b1e);
   background-attachment: fixed;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  min-height: 100vh;
 }
 
-/* Scrollbar estilizada */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Centralização do Site */
+.site-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-dark);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
-}
-
-/* Cards com efeito glassmorphism */
-.card {
-  background: rgba(17, 24, 39, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+/* SEU CSS DO UPLOAD PANEL - EXATO */
+.upload-panel {
+  width: 100%;
+  /* Deixando responsivo dentro da coluna, mas com o estilo fixo */
   padding: 20px;
-  transition: all 0.3s ease;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #0f1f3f, #0a1530);
+  box-shadow: 0 0 40px rgba(0, 140, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(30, 200, 255, 0.1);
 }
 
-.card:hover {
-  border-color: var(--primary);
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+.upload-panel h2 {
+  margin-bottom: 18px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  font-weight: bold;
 }
 
-/* Glow effects */
-.glow {
-  box-shadow: 0 0 10px var(--primary),
-    0 0 20px rgba(0, 212, 255, 0.3),
-    0 0 30px rgba(0, 212, 255, 0.1);
+.upload-item {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(180deg, #122b55, #0c1f3f);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.glow-text {
-  text-shadow: 0 0 10px var(--primary),
-    0 0 20px rgba(0, 212, 255, 0.5);
-}
-
-/* Botões */
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  color: var(--bg-dark);
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
-}
-
-/* Progress bars para strength meter */
-.strength-bar {
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg,
-      var(--danger) 0%,
-      var(--warning) 50%,
-      var(--success) 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.strength-indicator {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 16px;
-  background: white;
-  border-radius: 2px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-}
-
-/* Upload zones */
-.upload-zone {
-  border: 2px dashed var(--border-color);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.upload-zone:hover {
-  border-color: var(--primary);
-  background: rgba(0, 212, 255, 0.05);
-}
-
-.upload-zone.noite {
-  background: linear-gradient(135deg, rgba(30, 41, 82, 0.8) 0%, rgba(17, 24, 39, 0.8) 100%);
-}
-
-.upload-zone.manha {
-  background: linear-gradient(135deg, rgba(255, 152, 0, 0.15) 0%, rgba(17, 24, 39, 0.8) 100%);
-}
-
-.upload-zone.resultado {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(17, 24, 39, 0.8) 100%);
-}
-
-/* Animações */
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 10px var(--primary);
-  }
-
-  50% {
-    box-shadow: 0 0 25px var(--primary), 0 0 40px rgba(0, 212, 255, 0.3);
-  }
-}
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Moeda suggestion card */
-.moeda-card {
-  background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
-  border: 2px solid var(--primary);
-  position: relative;
-  overflow: hidden;
-}
-
-.moeda-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(from 0deg, transparent, var(--primary), transparent 30%);
-  animation: rotate 4s linear infinite;
-  opacity: 0.1;
-}
-
-@keyframes rotate {
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Confidence circle */
-.confidence-circle {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: conic-gradient(var(--primary) calc(var(--percentage) * 3.6deg),
-      rgba(0, 212, 255, 0.2) 0deg);
+.icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  font-size: 20px;
+  margin-right: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.confidence-circle::before {
-  content: '';
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  background: var(--bg-card);
-  border-radius: 50%;
+.icon.night {
+  background: linear-gradient(135deg, #00b4ff, #007bff);
 }
 
-.confidence-value {
-  position: relative;
-  z-index: 1;
-  font-size: 28px;
-  font-weight: bold;
-  color: var(--primary);
+.icon.morning {
+  background: linear-gradient(135deg, #ffd43b, #ff922b);
+}
+
+.icon.result {
+  background: linear-gradient(135deg, #4dabf7, #339af0);
+}
+
+.text {
+  flex: 1;
+}
+
+.text strong {
+  display: block;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.text span {
+  font-size: 12px;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.file-icon {
+  font-size: 18px;
+  opacity: 0.7;
+  color: #1ec8ff;
+}
+
+.upload-drop {
+  margin-top: 16px;
+  padding: 26px 16px;
+  border: 2px dashed #1ec8ff;
+  border-radius: 14px;
+  text-align: center;
+  color: #9ee7ff;
+  cursor: pointer;
+  background: rgba(30, 200, 255, 0.05);
+  transition: all 0.2s;
+}
+
+.upload-drop:hover {
+  background: rgba(30, 200, 255, 0.1);
+  border-color: #fff;
+}
+
+.upload-drop p {
+  margin-top: 6px;
+  font-size: 13px;
 }
