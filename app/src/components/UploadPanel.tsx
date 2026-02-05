@@ -1,38 +1,51 @@
 'use client';
 
-import { Upload, FileText } from 'lucide-react';
+import { FileText, Upload } from 'lucide-react';
 
 const UploadPanel = () => {
     const files = [
-        { name: 'MFC Noite', time: '20:30', icon: '🌙' },
-        { name: 'MFC Manhã', time: '06:30', icon: '☀️' },
-        { name: 'Resultado Bonoto', time: 'Portfolio do dia', icon: '📊' },
+        {
+            name: 'MFC Noite',
+            time: 'Upload às 20:30',
+            icon: '🌙',
+            bg: 'bg-gradient-to-br from-[#00b4ff] to-[#007bff]'
+        },
+        {
+            name: 'MFC Manhã',
+            time: 'Upload às 06:30',
+            icon: '☀️',
+            bg: 'bg-gradient-to-br from-[#ffd43b] to-[#ff922b]'
+        },
+        {
+            name: 'Resultado Bonoto',
+            time: 'Upload às Portfolio do dia',
+            icon: '📊',
+            bg: 'bg-gradient-to-br from-[#4dabf7] to-[#339af0]'
+        }
     ];
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-white mb-6">UPLOAD PANEL</h2>
+        <div className="w-full p-[20px] rounded-[18px] bg-gradient-to-b from-[#0f1f3f] to-[#0a1530] shadow-[0_0_40px_rgba(0,140,255,0.15)] text-white">
+            <h2 className="mb-[18px] font-bold text-[16px] tracking-wider">UPLOAD PANEL</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-[12px]">
                 {files.map((file, index) => (
-                    <div key={index} className="group relative bg-gradient-to-r from-slate-800/50 to-slate-800/30 hover:from-slate-800/70 hover:to-slate-800/50 border border-cyan-500/10 hover:border-cyan-500/30 rounded-xl p-4 transition-all cursor-pointer">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center text-2xl shadow-lg">
-                                {file.icon}
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-sm font-semibold text-white mb-1">{file.name}</h3>
-                                <p className="text-xs text-slate-400">Upload às {file.time}</p>
-                            </div>
-                            <FileText className="w-5 h-5 text-cyan-400 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    <div key={index} className="flex items-center bg-gradient-to-b from-[#122b55] to-[#0c1f3f] rounded-[14px] p-[14px]">
+                        <div className={`w-[42px] h-[42px] rounded-[10px] flex items-center justify-center text-[20px] mr-[12px] ${file.bg}`}>
+                            {file.icon}
                         </div>
+                        <div className="flex-1">
+                            <strong className="block text-[14px] font-bold">{file.name}</strong>
+                            <span className="text-[12px] opacity-70 italic">{file.time}</span>
+                        </div>
+                        <FileText className="w-[18px] h-[18px] opacity-70 text-cyan-400" />
                     </div>
                 ))}
             </div>
 
-            <div className="mt-6 border-2 border-dashed border-cyan-500/30 rounded-xl p-8 text-center hover:border-cyan-500/50 transition-colors cursor-pointer group">
-                <Upload className="w-8 h-8 text-cyan-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-sm text-slate-400">Arraste arquivos ou clique para selecionar</p>
+            <div className="mt-[16px] p-[26px_16px] border-2 border-dashed border-[#1ec8ff] rounded-[14px] text-center text-[#9ee7ff] cursor-pointer hover:bg-cyan-500/5 transition-colors group">
+                <Upload className="w-6 h-6 mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-[13px]">Arraste arquivos ou clique para selecionar</p>
             </div>
         </div>
     );

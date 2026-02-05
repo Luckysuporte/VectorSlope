@@ -10,22 +10,22 @@
   --warning: #FFD93D;
   --danger: #FF4757;
   --success: #00FF88;
-  
+
   /* Backgrounds */
   --bg-dark: #0A0E17;
   --bg-card: #111827;
   --bg-card-hover: #1a2235;
   --bg-gradient: linear-gradient(135deg, #0A0E17 0%, #111827 50%, #0F172A 100%);
-  
+
   /* Borders */
   --border-glow: rgba(0, 212, 255, 0.3);
   --border-color: rgba(0, 212, 255, 0.2);
-  
+
   /* Text */
   --text-primary: #FFFFFF;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
-  
+
   /* Moeda Colors */
   --usd-color: #4CAF50;
   --eur-color: #2196F3;
@@ -43,15 +43,16 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg-dark);
+  background: #050b1e;
   color: var(--text-primary);
 }
 
 body {
-  background: var(--bg-gradient);
+  background: radial-gradient(circle at top, #0b1c3d, #050b1e);
   background-attachment: fixed;
 }
 
@@ -92,13 +93,13 @@ body {
 /* Glow effects */
 .glow {
   box-shadow: 0 0 10px var(--primary),
-              0 0 20px rgba(0, 212, 255, 0.3),
-              0 0 30px rgba(0, 212, 255, 0.1);
+    0 0 20px rgba(0, 212, 255, 0.3),
+    0 0 30px rgba(0, 212, 255, 0.1);
 }
 
 .glow-text {
   text-shadow: 0 0 10px var(--primary),
-               0 0 20px rgba(0, 212, 255, 0.5);
+    0 0 20px rgba(0, 212, 255, 0.5);
 }
 
 /* Botões */
@@ -122,11 +123,10 @@ body {
 .strength-bar {
   height: 8px;
   border-radius: 4px;
-  background: linear-gradient(90deg, 
-    var(--danger) 0%, 
-    var(--warning) 50%, 
-    var(--success) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--danger) 0%,
+      var(--warning) 50%,
+      var(--success) 100%);
   position: relative;
   overflow: hidden;
 }
@@ -171,13 +171,27 @@ body {
 
 /* Animações */
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px var(--primary); }
-  50% { box-shadow: 0 0 25px var(--primary), 0 0 40px rgba(0, 212, 255, 0.3); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 10px var(--primary);
+  }
+
+  50% {
+    box-shadow: 0 0 25px var(--primary), 0 0 40px rgba(0, 212, 255, 0.3);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .animate-pulse-glow {
@@ -209,7 +223,9 @@ body {
 }
 
 @keyframes rotate {
-  100% { transform: rotate(360deg); }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Confidence circle */
@@ -217,10 +233,8 @@ body {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--primary) calc(var(--percentage) * 3.6deg),
-    rgba(0, 212, 255, 0.2) 0deg
-  );
+  background: conic-gradient(var(--primary) calc(var(--percentage) * 3.6deg),
+      rgba(0, 212, 255, 0.2) 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
