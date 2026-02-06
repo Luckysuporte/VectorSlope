@@ -7,7 +7,7 @@ const UploadPanel = () => {
         <div className="upload-panel">
             <h2>UPLOAD PANEL</h2>
 
-            {/* Novo Botão - Estilizado como um item da lista, mas com destaque */}
+            {/* Novo Botão - Nova Análise */}
             <Link href="/analise-diaria" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="upload-item" style={{
                     border: '1px solid rgba(0, 212, 255, 0.4)',
@@ -46,14 +46,17 @@ const UploadPanel = () => {
                 <div className="file-icon">📄</div>
             </div>
 
-            <div className="upload-item">
-                <div className="icon result">📊</div>
-                <div className="text">
-                    <strong>Resultado Bonoto</strong>
-                    <span>Upload às Portfolio do dia</span>
+            {/* Link para Resultado Bonoto */}
+            <Link href="/resultado-diario" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="upload-item" style={{ cursor: 'pointer' }}>
+                    <div className="icon result">📊</div>
+                    <div className="text">
+                        <strong>Resultado Bonoto</strong>
+                        <span>Preencher Resultado (Dia seguinte)</span>
+                    </div>
+                    <div className="file-icon">➔</div>
                 </div>
-                <div className="file-icon">📄</div>
-            </div>
+            </Link>
 
             <div className="upload-drop">
                 <span className="arrow">⬆️</span>
