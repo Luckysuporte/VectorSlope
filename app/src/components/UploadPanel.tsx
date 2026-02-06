@@ -9,7 +9,7 @@ const UploadPanel = () => {
     const fileInputNoite = useRef<HTMLInputElement>(null);
     const fileInputManha = useRef<HTMLInputElement>(null);
 
-    const handleClick = (ref: React.RefObject<HTMLInputElement>) => {
+    const handleClick = (ref: React.RefObject<HTMLInputElement | null>) => {
         ref.current?.click();
     };
 
