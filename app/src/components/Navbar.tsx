@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { LayoutDashboard, BarChart3, Send, History, Settings, User, Bell } from 'lucide-react';
 
 const Navbar = () => {
@@ -24,18 +25,25 @@ const Navbar = () => {
 
                 {/* Menu Items */}
                 <div className="hidden md:flex items-center gap-6">
-                    {menuItems.map((item) => (
-                        <button
-                            key={item.label}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${item.active
-                                ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]'
-                                : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                }`}
-                        >
-                            <item.icon className="w-4 h-4" />
-                            <span className="text-[13px] font-medium">{item.label}</span>
-                        </button>
-                    ))}
+                    {menuItems.map((item) => {
+                        const href = item.label === 'Painel' ? '/' :
+                            item.label === 'Histórico' ? '/historico' :
+                                item.label === 'Análise' ? '/analise-diaria' : '#';
+
+                        return (
+                            <Link
+                                key={item.label}
+                                href={href}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${item.active
+                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]'
+                                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                    }`}
+                            >
+                                <item.icon className="w-4 h-4" />
+                                <span className="text-[13px] font-medium">{item.label}</span>
+                            </Link>
+                        );
+                    })}
                 </div>
 
                 {/* Right Side */}

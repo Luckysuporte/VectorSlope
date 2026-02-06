@@ -25,7 +25,7 @@ const UploadPanel = () => {
             const fileName = `${date}_${type}_${timestamp}.${file.name.split('.').pop()}`;
 
             // 1. Upload para o Storage
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from('prints')
                 .upload(fileName, file);
 
@@ -47,9 +47,9 @@ const UploadPanel = () => {
 
             alert(`✅ Print ${type === 'noite' ? 'da Noite' : 'da Manhã'} enviado com sucesso!`);
 
-        } catch (error: any) {
+        } catch (error) {
             console.error('Erro no upload:', error);
-            alert('❌ Erro ao enviar imagem: ' + error.message);
+            alert('❌ Erro ao enviar imagem: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
         } finally {
             setUploading(prev => ({ ...prev, [type]: false }));
             // Limpar input

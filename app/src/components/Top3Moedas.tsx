@@ -12,8 +12,19 @@ const defaultData = [
 ]
 
 export default function Top3Moedas({ data = defaultData }: Top3MoedasProps) {
-    // Calculate SVG pie chart
-    let cumulativePercent = 0
+    // Pre-calculate data with coordinates
+    let cumulativePercent = 0;
+    const chartData = data.map(item => {
+        const startPercent = cumulativePercent;
+        const endPercent = cumulativePercent + (item.percent / 100);
+        cumulativePercent = endPercent;
+
+        return {
+            ...item,
+            startPercent,
+            endPercent
+        };
+    });
 
     const getCoordinatesForPercent = (percent: number) => {
         const x = Math.cos(2 * Math.PI * percent)
@@ -29,10 +40,9 @@ export default function Top3Moedas({ data = defaultData }: Top3MoedasProps) {
                 {/* Pie Chart */}
                 <div className="relative">
                     <svg viewBox="-1 -1 2 2" className="w-32 h-32 transform -rotate-90">
-                        {data.map((item, index) => {
-                            const [startX, startY] = getCoordinatesForPercent(cumulativePercent)
-                            cumulativePercent += item.percent / 100
-                            const [endX, endY] = getCoordinatesForPercent(cumulativePercent)
+                        {chartData.map((item, index) => {
+                            const [startX, startY] = getCoordinatesForPercent(item.startPercent)
+                            const [endX, endY] = getCoordinatesForPercent(item.endPercent)
 
                             const largeArcFlag = item.percent > 50 ? 1 : 0
 
