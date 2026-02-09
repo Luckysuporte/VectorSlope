@@ -77,9 +77,10 @@ const UploadPanel = () => {
 
             alert(`✅ ${newUrls.length} print(s) ${type === 'noite' ? 'da Noite' : 'da Manhã'} enviado(s) com sucesso!`);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Erro no upload:', error);
-            alert('❌ Erro ao enviar imagem: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
+            const errorMessage = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+            alert(`❌ Erro ao enviar imagem: ${errorMessage}`);
         } finally {
             setUploading(prev => ({ ...prev, [type]: false }));
             // Limpar input
