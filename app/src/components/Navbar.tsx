@@ -16,12 +16,13 @@ const Navbar = () => {
         <nav className="w-full bg-slate-900/40 backdrop-blur-md border-b border-white/5 px-6 py-3">
             <div className="flex items-center justify-between">
                 {/* Logo */}
-                <div className="flex items-center gap-3">
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <div className="w-8 h-8 bg-gradient-to-br from-[#00b4ff] to-[#007bff] rounded-lg shadow-[0_0_15px_rgba(0,180,255,0.3)] flex items-center justify-center">
                         <span className="text-white font-bold text-sm">V</span>
                     </div>
                     <span className="text-lg font-bold text-white tracking-tight">VectorSlope</span>
-                </div>
+                </Link>
 
                 {/* Menu Items */}
                 <div className="hidden md:flex items-center gap-6">
