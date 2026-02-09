@@ -10,7 +10,7 @@ import HistoricalChoices from '../components/HistoricalChoices';
 
 export default function Dashboard() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 w-full mb-10">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 w-full mb-10 mt-8">
 
       {/* Coluna Esquerda - Espaçamento aumentado entre blocos */}
       <div className="flex flex-col gap-10">
