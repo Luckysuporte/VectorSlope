@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import SimilarPatterns from '../../components/SimilarPatterns';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
 const TIMEFRAMES = ['MN1', 'W1', 'D1', 'H4', 'H1'];
@@ -136,6 +137,10 @@ export default function DailyAnalysisPage() {
                         </button>
                     </div>
                 </form>
+
+                <div className="mt-8">
+                    <SimilarPatterns currentSlopes={slopes} />
+                </div>
             </div>
         </div>
     );
