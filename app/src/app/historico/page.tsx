@@ -117,9 +117,6 @@ const ImageCarousel = ({
                             <Trash2 size={14} />
                         </button>
                     )}
-                    <div className="pointer-events-none bg-black/60 p-1.5 rounded-full backdrop-blur-sm">
-                        <ExternalLink size={14} className="text-white" />
-                    </div>
                 </div>
             </div>
 
@@ -168,7 +165,7 @@ const ImageCarousel = ({
 };
 
 const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true); // Default open for debug
 
     if (!slopes || Object.keys(slopes).length === 0) return null;
 
@@ -182,7 +179,7 @@ const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-cyan-400 transition-colors mb-2 w-full"
             >
                 <TableIcon size={14} />
-                VER TABELA DE SLOPES
+                DADOS DOS SLOPES (DEBUG)
                 {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
@@ -200,7 +197,13 @@ const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
                                 <tr key={curr} className="hover:bg-slate-800/30">
                                     <td className="px-3 py-2 font-bold text-slate-300">{curr}</td>
                                     {timeframes.map(tf => {
-                                        const val = parseFloat(slopes[curr]?.[tf] || '0');
+                                        let val = 0;
+                                        // Tenta acessar slopes[curr][tf] ou slopes[curr].tf
+                                        const rawVal = slopes[curr]?.[tf];
+                                        if (rawVal !== undefined && rawVal !== null) {
+                                            val = parseFloat(String(rawVal));
+                                        }
+
                                         const color = val > 0 ? 'text-green-400' : val < 0 ? 'text-red-400' : 'text-slate-500';
                                         return (
                                             <td key={tf} className={`px-3 py-2 text-center font-mono ${color}`}>
@@ -241,6 +244,7 @@ export default function HistoryPage() {
                 .order('data', { ascending: false });
 
             if (error) throw error;
+            console.log('Dados do histórico:', data); // Log para debug
             setRecords(data || []);
         } catch (error) {
             console.error('Erro ao buscar histórico:', error);
@@ -296,7 +300,7 @@ export default function HistoryPage() {
             <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
-                        Galeria de Análises & Slopes
+                        Galeria de Análises & Slopes (V3)
                     </h1>
                     <p className="text-slate-400">
                         Histórico completo das operações, resultados e prints diários.
@@ -395,14 +399,15 @@ export default function HistoryPage() {
 
                                 {/* Tabela de Slopes (Dados da Análise) */}
                                 {(() => {
+                                    // DEBUG LOGICA
                                     let slopesData = record.slopes_json;
-                                    // Garantir que é objeto se vier como string
+
+                                    // Parse forçado se for string
                                     if (typeof slopesData === 'string') {
                                         try {
                                             slopesData = JSON.parse(slopesData);
                                         } catch (e) {
-                                            console.error('Erro ao parsear slopes:', e);
-                                            slopesData = null;
+                                            console.error('Falha no parse:', e);
                                         }
                                     }
 
@@ -411,13 +416,14 @@ export default function HistoryPage() {
                                             {slopesData && Object.keys(slopesData).length > 0 ? (
                                                 <SlopesTable slopes={slopesData} />
                                             ) : (
-                                                // Debug visual temporário para entender o estado
-                                                <p className="text-[10px] text-slate-700 italic border-t border-slate-800 pt-2">
-                                                    Sem dados de slopes salvos.
-                                                </p>
+                                                <div className="border border-red-900/50 bg-red-950/20 p-2 rounded text-[10px] text-red-300 font-mono">
+                                                    DEBUG: Sem dados de slopes. <br />
+                                                    Raw: {JSON.stringify(record.slopes_json)} <br />
+                                                    Type: {typeof record.slopes_json}
+                                                </div>
                                             )}
                                         </div>
-                                    );
+                                    )
                                 })()}
                             </div>
                         ))}
