@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 
 const UploadPanel = () => {
     const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
+    const [isDragging, setIsDragging] = useState(false);
     const fileInputNoite = useRef<HTMLInputElement>(null);
     const fileInputManha = useRef<HTMLInputElement>(null);
 
@@ -13,10 +14,43 @@ const UploadPanel = () => {
         ref.current?.click();
     };
 
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'noite' | 'manha') => {
-        const files = event.target.files;
+    const processFiles = async (files: FileList | File[], forceType?: 'noite' | 'manha') => {
         if (!files || files.length === 0) return;
 
+        const filesArray = Array.from(files);
+
+        // Agrupar arquivos por tipo
+        const uploadsNoite: File[] = [];
+        const uploadsManha: File[] = [];
+
+        filesArray.forEach(file => {
+            const name = file.name.toLowerCase();
+            if (forceType) {
+                if (forceType === 'noite') uploadsNoite.push(file);
+                else uploadsManha.push(file);
+            } else {
+                // Detecção inteligente
+                if (name.includes('noite') || name.includes('night')) {
+                    uploadsNoite.push(file);
+                } else if (name.includes('manha') || name.includes('manhã') || name.includes('morning')) {
+                    uploadsManha.push(file);
+                } else {
+                    // Se não identificar, assume o horário atual? Ou manda para noite por padrão? 
+                    // Melhor perguntar ou usar regra de horário. Por enquanto, vou alertar.
+                    // Para simplificar: se for drop genérico e não tiver nome, ignora ou avisa?
+                    // Vou assumir que se o usuário arrastou, ele quer subir. Vou dividir pelo horário atual.
+                    const currentHour = new Date().getHours();
+                    if (currentHour >= 18 || currentHour < 5) uploadsNoite.push(file);
+                    else uploadsManha.push(file);
+                }
+            }
+        });
+
+        if (uploadsNoite.length > 0) await uploadBatch(uploadsNoite, 'noite');
+        if (uploadsManha.length > 0) await uploadBatch(uploadsManha, 'manha');
+    };
+
+    const uploadBatch = async (files: File[], type: 'noite' | 'manha') => {
         setUploading(prev => ({ ...prev, [type]: true }));
 
         try {
@@ -80,16 +114,71 @@ const UploadPanel = () => {
         } catch (error: any) {
             console.error('Erro no upload:', error);
             const errorMessage = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
-            alert(`❌ Erro ao enviar imagem: ${errorMessage}`);
+            alert(`❌ Erro ao enviar imagem (${type}): ${errorMessage}`);
         } finally {
             setUploading(prev => ({ ...prev, [type]: false }));
-            // Limpar input
-            if (event.target) event.target.value = '';
+        }
+    }
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'noite' | 'manha') => {
+        if (event.target.files) {
+            processFiles(event.target.files, type);
+            event.target.value = ''; // Reset input
+        }
+    };
+
+    // Drag and Drop Handlers
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            processFiles(e.dataTransfer.files);
         }
     };
 
     return (
-        <div className="upload-panel">
+        <div
+            className="upload-panel"
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{
+                border: isDragging ? '2px dashed #00D4FF' : '2px solid transparent',
+                borderRadius: '16px',
+                transition: 'border 0.3s ease',
+                position: 'relative'
+            }}
+        >
+            {isDragging && (
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'rgba(0, 0, 0, 0.7)',
+                    zIndex: 50,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '16px',
+                    color: '#00D4FF',
+                    fontWeight: 'bold',
+                    fontSize: '1.5rem',
+                    pointerEvents: 'none'
+                }}>
+                    Solte os arquivos para processar automaticamente
+                </div>
+            )}
+
             <h2>UPLOAD PANEL</h2>
 
             {/* Inputs Ocultos */}
