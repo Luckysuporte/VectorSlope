@@ -296,7 +296,7 @@ export default function HistoryPage() {
             <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
-                        Galeria de Análises
+                        Galeria de Análises & Slopes
                     </h1>
                     <p className="text-slate-400">
                         Histórico completo das operações, resultados e prints diários.
@@ -394,9 +394,31 @@ export default function HistoryPage() {
                                 </div>
 
                                 {/* Tabela de Slopes (Dados da Análise) */}
-                                {record.slopes_json && (
-                                    <SlopesTable slopes={record.slopes_json} />
-                                )}
+                                {(() => {
+                                    let slopesData = record.slopes_json;
+                                    // Garantir que é objeto se vier como string
+                                    if (typeof slopesData === 'string') {
+                                        try {
+                                            slopesData = JSON.parse(slopesData);
+                                        } catch (e) {
+                                            console.error('Erro ao parsear slopes:', e);
+                                            slopesData = null;
+                                        }
+                                    }
+
+                                    return (
+                                        <div className="mt-4">
+                                            {slopesData && Object.keys(slopesData).length > 0 ? (
+                                                <SlopesTable slopes={slopesData} />
+                                            ) : (
+                                                // Debug visual temporário para entender o estado
+                                                <p className="text-[10px] text-slate-700 italic border-t border-slate-800 pt-2">
+                                                    Sem dados de slopes salvos.
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         ))}
                     </div>

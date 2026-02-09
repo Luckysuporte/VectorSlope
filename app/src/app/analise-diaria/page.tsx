@@ -42,8 +42,8 @@ export default function DailyAnalysisPage() {
 
             setMessage('✅ Análise salva com sucesso!');
         } catch (error: any) {
-            console.error(error);
-            setMessage(`❌ Erro ao salvar: ${error.message || 'Erro desconhecido'}`);
+            console.error('Erro detalhado:', error);
+            setMessage(`❌ Erro ao salvar: ${error.message || JSON.stringify(error)}`);
         } finally {
             setLoading(false);
         }
