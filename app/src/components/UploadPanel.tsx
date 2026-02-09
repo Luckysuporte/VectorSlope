@@ -14,38 +14,68 @@ const UploadPanel = () => {
     };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'noite' | 'manha') => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
 
         setUploading(prev => ({ ...prev, [type]: true }));
 
         try {
             const date = new Date().toISOString().split('T')[0];
-            const timestamp = Date.now();
-            const fileName = `${date}_${type}_${timestamp}.${file.name.split('.').pop()}`;
+            const newUrls: string[] = [];
 
-            // 1. Upload para o Storage
-            const { error: uploadError } = await supabase.storage
-                .from('prints')
-                .upload(fileName, file);
+            // 1. Upload para o Storage (todos os arquivos)
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const timestamp = Date.now();
+                const fileName = `${date}_${type}_${timestamp}_${i}.${file.name.split('.').pop()}`;
 
-            if (uploadError) throw uploadError;
+                const { error: uploadError } = await supabase.storage
+                    .from('prints')
+                    .upload(fileName, file);
 
-            // 2. Pegar URL Pública
-            const { data: { publicUrl } } = supabase.storage
-                .from('prints')
-                .getPublicUrl(fileName);
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('prints')
+                    .getPublicUrl(fileName);
+
+                newUrls.push(publicUrl);
+            }
+
+            // 2. Buscar dados atuais para não sobrescrever
+            const { data: existingData, error: fetchError } = await supabase
+                .from('analises_diarias')
+                .select(`print_${type}`)
+                .eq('data', date)
+                .single();
+
+            // Se não encontrar (PGRST116), tudo bem, assumimos array vazio
+            // Mas upsert vai criar se não existir
+
+            let currentUrls: string[] = [];
+            const column = `print_${type}`;
+
+            if (existingData && (existingData as any)[column]) {
+                // Garantir que é array, caso venha algo diferente (mas o banco já é text[])
+                const data = (existingData as any)[column];
+                currentUrls = Array.isArray(data)
+                    ? data
+                    : [data].filter(Boolean); // Fallback para legado se não migrou direito
+            }
+
+            const updatedUrls = [...currentUrls, ...newUrls];
 
             // 3. Atualizar no Banco de Dados
-            const column = type === 'noite' ? 'print_noite' : 'print_manha';
             const { error: dbError } = await supabase
                 .from('analises_diarias')
-                .update({ [column]: publicUrl })
-                .eq('data', date); // Assume que é o upload para o dia de HOJE
+                .upsert({
+                    data: date,
+                    [column]: updatedUrls
+                }, { onConflict: 'data' });
 
             if (dbError) throw dbError;
 
-            alert(`✅ Print ${type === 'noite' ? 'da Noite' : 'da Manhã'} enviado com sucesso!`);
+            alert(`✅ ${newUrls.length} print(s) ${type === 'noite' ? 'da Noite' : 'da Manhã'} enviado(s) com sucesso!`);
 
         } catch (error) {
             console.error('Erro no upload:', error);
@@ -68,6 +98,7 @@ const UploadPanel = () => {
                 className="hidden"
                 onChange={(e) => handleFileChange(e, 'noite')}
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
             />
             <input
@@ -76,6 +107,7 @@ const UploadPanel = () => {
                 className="hidden"
                 onChange={(e) => handleFileChange(e, 'manha')}
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
             />
 
@@ -94,7 +126,7 @@ const UploadPanel = () => {
                     </div>
                     <div className="text">
                         <strong style={{ color: '#00D4FF', fontSize: '16px' }}>Nova Análise</strong>
-                        <span style={{ color: '#rgba(255,255,255,0.7)' }}>Preencher Slopes (20:30)</span>
+                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Preencher Slopes (20:30)</span>
                     </div>
                     <div className="file-icon" style={{ color: '#00D4FF', fontWeight: 'bold' }}>➔</div>
                 </div>

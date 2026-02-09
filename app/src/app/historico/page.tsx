@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Calendar, TrendingUp, TrendingDown, Moon, Sun, Search, ExternalLink, History as HistoryIcon } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, Moon, Sun, Search, ExternalLink, History as HistoryIcon, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface AnalysisRecord {
     id: string;
@@ -11,10 +12,124 @@ interface AnalysisRecord {
     moeda_vencedora: string | null;
     config_vencedora: string | null;
     lucro_real: number | null;
-    print_noite: string | null;
-    print_manha: string | null;
+    print_noite: string | string[] | null;
+    print_manha: string | string[] | null;
     slopes_json: Record<string, unknown>;
 }
+
+const ImageCarousel = ({ images, title, icon }: { images: string[], title: string, icon: React.ReactNode }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    if (!images || images.length === 0) {
+        return (
+            <div className="flex-1">
+                <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">
+                    {icon} {title}
+                </p>
+                <div className="h-24 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs">
+                    Sem print
+                </div>
+            </div>
+        );
+    }
+
+    const nextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    return (
+        <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1 justify-between">
+                <span className="flex items-center gap-1">{icon} {title}</span>
+                {images.length > 1 && (
+                    <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-cyan-400">
+                        {currentIndex + 1}/{images.length}
+                    </span>
+                )}
+            </p>
+
+            <div className="relative group aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800 hover:border-cyan-500/50 transition-colors">
+                <img
+                    src={images[currentIndex]}
+                    alt={`${title} - Imagem ${currentIndex + 1}`}
+                    className="w-full h-full object-cover cursor-pointer opacity-80 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setIsLightboxOpen(true)}
+                />
+
+                {images.length > 1 && (
+                    <>
+                        <button
+                            onClick={prevImage}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <ChevronLeft size={16} />
+                        </button>
+                        <button
+                            onClick={nextImage}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <ChevronRight size={16} />
+                        </button>
+                    </>
+                )}
+
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm">
+                        <ExternalLink size={20} className="text-white" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Lightbox Simples */}
+            {isLightboxOpen && (
+                <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsLightboxOpen(false)}>
+                    <button
+                        className="absolute top-4 right-4 text-slate-400 hover:text-white p-2"
+                        onClick={() => setIsLightboxOpen(false)}
+                    >
+                        <X size={32} />
+                    </button>
+
+                    <div className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                        <img
+                            src={images[currentIndex]}
+                            alt="Full size"
+                            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl shadow-cyan-900/20"
+                        />
+
+                        {images.length > 1 && (
+                            <>
+                                <button
+                                    onClick={prevImage}
+                                    className="absolute -left-12 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4"
+                                >
+                                    <ChevronLeft size={48} />
+                                </button>
+                                <button
+                                    onClick={nextImage}
+                                    className="absolute -right-12 top-1/2 -translate-y-1/2 text-white/50 hover:text-white p-4"
+                                >
+                                    <ChevronRight size={48} />
+                                </button>
+
+                                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 text-slate-400 font-mono">
+                                    {currentIndex + 1} / {images.length}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export default function HistoryPage() {
     const [records, setRecords] = useState<AnalysisRecord[]>([]);
@@ -43,6 +158,11 @@ export default function HistoryPage() {
     const formatDate = (dateString: string) => {
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
+    };
+
+    const normalizeFiles = (files: string | string[] | null): string[] => {
+        if (!files) return [];
+        return Array.isArray(files) ? files : [files];
     };
 
     return (
@@ -82,7 +202,7 @@ export default function HistoryPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {records.map((record) => (
-                            <div key={record.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 hover:border-cyan-500/30 transition-all group shadow-lg hover:shadow-cyan-900/10">
+                            <div key={record.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-900/10">
                                 {/* Cabeçalho do Card */}
                                 <div className="flex justify-between items-start mb-6">
                                     <div className="flex items-center gap-3">
@@ -113,43 +233,16 @@ export default function HistoryPage() {
 
                                 {/* Prints Section */}
                                 <div className="flex gap-4 mb-6">
-                                    {/* Print Noite */}
-                                    <div className="flex-1">
-                                        <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">
-                                            <Moon size={12} /> MFC NOITE
-                                        </p>
-                                        {record.print_noite ? (
-                                            <a href={record.print_noite} target="_blank" rel="noopener noreferrer" className="block relative aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800 group-hover:border-cyan-900 transition-colors">
-                                                <img src={record.print_noite} alt="Print Noite" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
-                                                    <ExternalLink size={16} />
-                                                </div>
-                                            </a>
-                                        ) : (
-                                            <div className="h-20 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs">
-                                                Sem print
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Print Manhã */}
-                                    <div className="flex-1">
-                                        <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">
-                                            <Sun size={12} /> MFC MANHÃ
-                                        </p>
-                                        {record.print_manha ? (
-                                            <a href={record.print_manha} target="_blank" rel="noopener noreferrer" className="block relative aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800 group-hover:border-orange-900 transition-colors">
-                                                <img src={record.print_manha} alt="Print Manhã" className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
-                                                    <ExternalLink size={16} />
-                                                </div>
-                                            </a>
-                                        ) : (
-                                            <div className="h-20 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs">
-                                                Sem print
-                                            </div>
-                                        )}
-                                    </div>
+                                    <ImageCarousel
+                                        images={normalizeFiles(record.print_noite)}
+                                        title="MFC NOITE"
+                                        icon={<Moon size={12} />}
+                                    />
+                                    <ImageCarousel
+                                        images={normalizeFiles(record.print_manha)}
+                                        title="MFC MANHÃ"
+                                        icon={<Sun size={12} />}
+                                    />
                                 </div>
 
                                 {/* Resultado Footer */}
