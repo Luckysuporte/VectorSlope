@@ -18,7 +18,7 @@ export default function RootLayout({
         <div className="site-container">
           <Navbar />
           {/* Aumentado o padding superior (pt-12) para descolar do menu */}
-          <main className="pt-24 pb-12">
+          <main className="pt-8 pb-12">
             {children}
           </main>
         </div>
