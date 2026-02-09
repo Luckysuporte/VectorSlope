@@ -14,21 +14,51 @@ const SimilarPatterns = ({ currentSlopes }: SimilarPatternsProps) => {
 
     useEffect(() => {
         const fetchPatterns = async () => {
-            if (!currentSlopes || Object.keys(currentSlopes).length === 0) return;
+            // 1. Se receber slopes via props (tempo real na tela de análise), usa eles
+            if (currentSlopes && Object.keys(currentSlopes).length > 0) {
+                setLoading(true);
+                try {
+                    // Pequeno delay para debounce manual simples
+                    const timer = setTimeout(async () => {
+                        const results = await findSimilarPatterns(currentSlopes);
+                        setMatches(results);
+                        setLoading(false);
+                    }, 1000);
 
-            setLoading(true);
-            try {
-                // Pequeno delay para debounce manual simples
-                const timer = setTimeout(async () => {
-                    const results = await findSimilarPatterns(currentSlopes);
-                    setMatches(results);
+                    return () => clearTimeout(timer);
+                } catch (error) {
+                    console.error("Erro ao buscar padrões:", error);
                     setLoading(false);
-                }, 1000);
+                }
+            }
+            // 2. Se não receber props (Dashboard), busca do banco o dia de hoje
+            else {
+                setLoading(true);
+                try {
+                    const { supabase } = await import('@/lib/supabase');
+                    const today = new Date().toISOString().split('T')[0];
 
-                return () => clearTimeout(timer);
-            } catch (error) {
-                console.error("Erro ao buscar padrões:", error);
-                setLoading(false);
+                    const { data: analysis, error } = await supabase
+                        .from('analises_diarias')
+                        .select('slopes_json')
+                        .eq('data', today)
+                        .single();
+
+                    if (error || !analysis || !analysis.slopes_json) {
+                        setMatches([]);
+                        setLoading(false);
+                        return;
+                    }
+
+                    const savedSlopes = analysis.slopes_json as Record<string, Record<string, string>>;
+                    const results = await findSimilarPatterns(savedSlopes);
+                    setMatches(results);
+
+                } catch (error) {
+                    console.error("Erro ao buscar padrões (dashboard):", error);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
