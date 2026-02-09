@@ -300,7 +300,7 @@ export default function HistoryPage() {
             <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
-                        Galeria de Análises & Slopes (V3)
+                        Galeria de Análises
                     </h1>
                     <p className="text-slate-400">
                         Histórico completo das operações, resultados e prints diários.
