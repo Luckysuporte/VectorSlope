@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Calendar, TrendingUp, TrendingDown, Moon, Sun, Search, ExternalLink, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy } from 'lucide-react';
+import { Moon, Sun, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy, Table as TableIcon, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -15,7 +15,7 @@ interface AnalysisRecord {
     print_noite: string | string[] | null;
     print_manha: string | string[] | null;
     print_resultado: string | string[] | null;
-    slopes_json: Record<string, unknown>;
+    slopes_json: Record<string, any> | null;
 }
 
 const ImageCarousel = ({
@@ -45,7 +45,7 @@ const ImageCarousel = ({
                 <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">
                     {icon} {title}
                 </p>
-                <div className="h-28 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs">
+                <div className="h-28 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs text-center px-4">
                     Sem print
                 </div>
             </div>
@@ -167,12 +167,70 @@ const ImageCarousel = ({
     );
 };
 
+const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    if (!slopes || Object.keys(slopes).length === 0) return null;
+
+    const timeframes = ['MN1', 'W1', 'D1', 'H4', 'H1'];
+    const currencies = Object.keys(slopes).sort();
+
+    return (
+        <div className="mt-4 border-t border-slate-800 pt-4">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-cyan-400 transition-colors mb-2 w-full"
+            >
+                <TableIcon size={14} />
+                VER TABELA DE SLOPES
+                {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+
+            {isOpen && (
+                <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950/50">
+                    <table className="w-full text-xs text-left">
+                        <thead className="bg-slate-900 text-slate-400 font-bold uppercase">
+                            <tr>
+                                <th className="px-3 py-2">Moeda</th>
+                                {timeframes.map(tf => <th key={tf} className="px-3 py-2 text-center">{tf}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                            {currencies.map(curr => (
+                                <tr key={curr} className="hover:bg-slate-800/30">
+                                    <td className="px-3 py-2 font-bold text-slate-300">{curr}</td>
+                                    {timeframes.map(tf => {
+                                        const val = parseFloat(slopes[curr]?.[tf] || '0');
+                                        const color = val > 0 ? 'text-green-400' : val < 0 ? 'text-red-400' : 'text-slate-500';
+                                        return (
+                                            <td key={tf} className={`px-3 py-2 text-center font-mono ${color}`}>
+                                                {val.toFixed(2)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function HistoryPage() {
     const [records, setRecords] = useState<AnalysisRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchHistory();
+    }, []);
+
+    // Atualiza lista quando recebe foco (útil se voltar do painel)
+    useEffect(() => {
+        const handleFocus = () => fetchHistory();
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, []);
 
     const fetchHistory = async () => {
@@ -314,7 +372,7 @@ export default function HistoryPage() {
                                 </div>
 
                                 {/* Prints Section */}
-                                <div className="flex flex-col md:flex-row gap-4 mb-6 overflow-x-auto pb-2">
+                                <div className="flex flex-col md:flex-row gap-4 mb-4 overflow-x-auto pb-2">
                                     <ImageCarousel
                                         images={normalizeFiles(record.print_noite)}
                                         title="MFC NOITE"
@@ -334,6 +392,11 @@ export default function HistoryPage() {
                                         onDelete={(index) => deleteImage(record.id, 'print_resultado', index)}
                                     />
                                 </div>
+
+                                {/* Tabela de Slopes (Dados da Análise) */}
+                                {record.slopes_json && (
+                                    <SlopesTable slopes={record.slopes_json} />
+                                )}
                             </div>
                         ))}
                     </div>
