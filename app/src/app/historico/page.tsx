@@ -165,7 +165,7 @@ const ImageCarousel = ({
 };
 
 const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
-    const [isOpen, setIsOpen] = useState(true); // Default open for debug
+    const [isOpen, setIsOpen] = useState(false);
 
     if (!slopes || Object.keys(slopes).length === 0) return null;
 
@@ -179,7 +179,7 @@ const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
                 className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-cyan-400 transition-colors mb-2 w-full"
             >
                 <TableIcon size={14} />
-                DADOS DOS SLOPES (DEBUG)
+                VER TABELA DE SLOPES
                 {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
@@ -399,10 +399,9 @@ export default function HistoryPage() {
 
                                 {/* Tabela de Slopes (Dados da Análise) */}
                                 {(() => {
-                                    // DEBUG LOGICA
                                     let slopesData = record.slopes_json;
 
-                                    // Parse forçado se for string
+                                    // Parse robusto
                                     if (typeof slopesData === 'string') {
                                         try {
                                             slopesData = JSON.parse(slopesData);
@@ -411,19 +410,12 @@ export default function HistoryPage() {
                                         }
                                     }
 
-                                    return (
-                                        <div className="mt-4">
-                                            {slopesData && Object.keys(slopesData).length > 0 ? (
-                                                <SlopesTable slopes={slopesData} />
-                                            ) : (
-                                                <div className="border border-red-900/50 bg-red-950/20 p-2 rounded text-[10px] text-red-300 font-mono">
-                                                    DEBUG: Sem dados de slopes. <br />
-                                                    Raw: {JSON.stringify(record.slopes_json)} <br />
-                                                    Type: {typeof record.slopes_json}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )
+                                    // Só renderiza se tiver dados válidos e não vazios
+                                    if (slopesData && typeof slopesData === 'object' && Object.keys(slopesData).length > 0) {
+                                        return <SlopesTable slopes={slopesData} />;
+                                    }
+
+                                    return null;
                                 })()}
                             </div>
                         ))}
