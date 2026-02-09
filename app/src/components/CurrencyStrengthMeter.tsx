@@ -1,19 +1,77 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Loader2 } from 'lucide-react';
+
+interface CurrencyData {
+    code: string;
+    name: string;
+    value: number;
+}
+
 const CurrencyStrengthMeter = () => {
-    const currencies = [
-        { code: 'GB', name: 'GBP', value: 0.68 },
-        { code: 'NZ', name: 'NZD', value: 0.51 },
-        { code: 'EU', name: 'EUR', value: 0.45 },
-        { code: 'AU', name: 'AUD', value: 0.32 },
-        { code: 'CA', name: 'CAD', value: 0.15 },
-        { code: 'CH', name: 'CHF', value: -0.05 },
-        { code: 'US', name: 'USD', value: -0.12 },
-        { code: 'JP', name: 'JPY', value: -0.77 },
-    ];
+    const [currencies, setCurrencies] = useState<CurrencyData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchStrengthData();
+    }, []);
+
+    const fetchStrengthData = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: analysis, error } = await supabase
+                .from('analises_diarias')
+                .select('slopes_json')
+                .eq('data', today)
+                .single();
+
+            if (error || !analysis || !analysis.slopes_json) {
+                // Se não tem dados, manter vazio ou mostrar mensagem
+                setLoading(false);
+                return;
+            }
+
+            const slopes = analysis.slopes_json as Record<string, Record<string, string>>;
+            const calculatedCurrencies: CurrencyData[] = [];
+
+            // Lista de moedas esperadas
+            const targetCurrencies = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
+
+            targetCurrencies.forEach(curr => {
+                const currencySlopes = slopes[curr];
+                if (currencySlopes) {
+                    // Calcular média dos slopes
+                    const values = Object.values(currencySlopes).map(v => parseFloat(v)).filter(v => !isNaN(v));
+
+                    if (values.length > 0) {
+                        const total = values.reduce((acc, val) => acc + val, 0);
+                        const avg = total / values.length;
+
+                        calculatedCurrencies.push({
+                            code: curr.substring(0, 2), // Ex: US, EU
+                            name: curr,
+                            value: avg
+                        });
+                    }
+                }
+            });
+
+            // Ordenar do mais forte para o mais fraco
+            calculatedCurrencies.sort((a, b) => b.value - a.value);
+
+            setCurrencies(calculatedCurrencies);
+
+        } catch (error) {
+            console.error('Erro ao buscar força das moedas:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const getBarStyles = (value: number) => {
-        const width = Math.abs(value) * 50;
+        const width = Math.min(100, Math.abs(value) * 50); // Limitar a 100%
         if (value >= 0) {
             return {
                 left: '50%',
@@ -30,6 +88,22 @@ const CurrencyStrengthMeter = () => {
             };
         }
     };
+
+    if (loading) {
+        return (
+            <div className="w-full p-8 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white flex justify-center items-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+            </div>
+        )
+    }
+
+    if (currencies.length === 0) {
+        return (
+            <div className="w-full p-8 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white flex flex-col justify-center items-center min-h-[400px] text-center">
+                <p className="text-slate-400 mb-4">Aguardando dados da análise...</p>
+            </div>
+        )
+    }
 
     return (
         <div className="w-full p-8 rounded-2xl bg-[#0f172a] border border-white/5 shadow-2xl text-white">
@@ -72,11 +146,11 @@ const CurrencyStrengthMeter = () => {
 
             {/* Escala */}
             <div className="flex justify-between mt-10 text-[11px] font-bold text-slate-600">
+                <span>-2.0</span>
                 <span>-1.0</span>
-                <span>-0.5</span>
                 <span className="text-slate-500">0</span>
-                <span>+0.5</span>
                 <span>+1.0</span>
+                <span>+2.0</span>
             </div>
         </div>
     );
