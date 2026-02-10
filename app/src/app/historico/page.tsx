@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Moon, Sun, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy, Table as TableIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Moon, Sun, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy, Table as TableIcon, ChevronDown, ChevronUp, Edit } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -258,6 +258,13 @@ export default function HistoryPage() {
         return `${day}/${month}/${year}`;
     };
 
+    const getNextDayFormatted = (dateString: string) => {
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+        date.setDate(date.getDate() + 1);
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    };
+
     const normalizeFiles = (files: string | string[] | null): string[] => {
         if (!files) return [];
         return Array.isArray(files) ? files : [files];
@@ -385,7 +392,7 @@ export default function HistoryPage() {
                                     />
                                     <ImageCarousel
                                         images={normalizeFiles(record.print_manha)}
-                                        title="MFC MANHÃ"
+                                        title={`MFC MANHÃ (${getNextDayFormatted(record.data)})`}
                                         icon={<Sun size={12} />}
                                         onDelete={(index) => deleteImage(record.id, 'print_manha', index)}
                                     />
@@ -412,7 +419,18 @@ export default function HistoryPage() {
 
                                     // Só renderiza se tiver dados válidos e não vazios
                                     if (slopesData && typeof slopesData === 'object' && Object.keys(slopesData).length > 0) {
-                                        return <SlopesTable slopes={slopesData} />;
+                                        return (
+                                            <div className="relative">
+                                                <Link
+                                                    href={`/analise-diaria?date=${record.data}`}
+                                                    className="absolute right-0 top-4 z-10 flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors bg-slate-900/80 px-3 py-1.5 rounded-lg border border-cyan-500/20 hover:border-cyan-500/50"
+                                                >
+                                                    <Edit size={14} />
+                                                    EDITAR SLOPES
+                                                </Link>
+                                                <SlopesTable slopes={slopesData} />
+                                            </div>
+                                        );
                                     }
 
                                     return null;

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import SimilarPatterns from '../../components/SimilarPatterns';
@@ -8,11 +9,49 @@ import SimilarPatterns from '../../components/SimilarPatterns';
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
 const TIMEFRAMES = ['MN1', 'W1', 'D1', 'H4', 'H1'];
 
-export default function DailyAnalysisPage() {
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+function DailyAnalysisContent() {
+    const searchParams = useSearchParams();
+    const initialDate = searchParams.get('date') || new Date().toISOString().split('T')[0];
+
+    const [date, setDate] = useState(initialDate);
     const [slopes, setSlopes] = useState<Record<string, Record<string, string>>>({});
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        const fetchAnalysis = async () => {
+            // Não bloqueia UI com loading total, mas poderia indicar carregamento dos dados
+            // setLoading(true); 
+            try {
+                const { data: existingData, error } = await supabase
+                    .from('analises_diarias')
+                    .select('slopes_json')
+                    .eq('data', date)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { // PGRST116 é "No rows found"
+                    console.error('Erro ao buscar análise:', error);
+                }
+
+                if (existingData && existingData.slopes_json) {
+                    // Garante que é um objeto compatível
+                    const slopesData = typeof existingData.slopes_json === 'string'
+                        ? JSON.parse(existingData.slopes_json)
+                        : existingData.slopes_json;
+
+                    setSlopes(slopesData as Record<string, Record<string, string>>);
+                } else {
+                    setSlopes({});
+                }
+            } catch (error) {
+                console.error('Erro no fetch:', error);
+            } finally {
+                // setLoading(false);
+            }
+        };
+
+        fetchAnalysis();
+    }, [date]);
 
     const handleSlopeChange = (currency: string, tf: string, value: string) => {
         setSlopes(prev => ({
@@ -143,5 +182,13 @@ export default function DailyAnalysisPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function DailyAnalysisPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-slate-950 text-white p-8 flex items-center justify-center">Carregando...</div>}>
+            <DailyAnalysisContent />
+        </Suspense>
     );
 }
