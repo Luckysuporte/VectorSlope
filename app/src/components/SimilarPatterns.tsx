@@ -36,12 +36,13 @@ const SimilarPatterns = ({ currentSlopes }: SimilarPatternsProps) => {
                 setLoading(true);
                 try {
                     const { supabase } = await import('@/lib/supabase');
-                    const today = new Date().toISOString().split('T')[0];
-
+                    // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
+                    // Isso mantém a consistência com "Moeda Sugerida" e "Força das Moedas".
                     const { data: analysis, error } = await supabase
                         .from('analises_diarias')
                         .select('slopes_json')
-                        .eq('data', today)
+                        .order('data', { ascending: false })
+                        .limit(1)
                         .single();
 
                     if (error || !analysis || !analysis.slopes_json) {
@@ -50,8 +51,19 @@ const SimilarPatterns = ({ currentSlopes }: SimilarPatternsProps) => {
                         return;
                     }
 
-                    const savedSlopes = analysis.slopes_json as Record<string, Record<string, string>>;
-                    const results = await findSimilarPatterns(savedSlopes);
+                    let savedSlopes = analysis.slopes_json;
+                    if (typeof savedSlopes === 'string') {
+                        try {
+                            savedSlopes = JSON.parse(savedSlopes);
+                        } catch (e) {
+                            console.error("Erro ao fazer parse de slopes_json:", e);
+                            setMatches([]);
+                            setLoading(false);
+                            return;
+                        }
+                    }
+
+                    const results = await findSimilarPatterns(savedSlopes as Record<string, Record<string, string>>);
                     setMatches(results);
 
                 } catch (error) {
@@ -100,7 +112,7 @@ const SimilarPatterns = ({ currentSlopes }: SimilarPatternsProps) => {
                         <p className="text-[11px] text-slate-500 italic mb-2">
                             {currentSlopes && Object.keys(currentSlopes).length > 0
                                 ? "Nenhum padrão similar encontrado"
-                                : "Preencha os dados para buscar similares"}
+                                : "Aguardando dados da análise..."}
                         </p>
                     </div>
                 )}
