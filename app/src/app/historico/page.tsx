@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Moon, Sun, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy, Table as TableIcon, ChevronDown, ChevronUp, Edit } from 'lucide-react';
+import { Moon, Sun, History as HistoryIcon, ChevronLeft, ChevronRight, X, Trash2, Trophy, Table as TableIcon, ChevronDown, ChevronUp, Edit, Upload, Plus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -22,15 +22,33 @@ const ImageCarousel = ({
     images,
     title,
     icon,
-    onDelete
+    onDelete,
+    onUpload
 }: {
     images: string[],
     title: string,
     icon: React.ReactNode,
-    onDelete?: (index: number) => void
+    onDelete?: (index: number) => void,
+    onUpload?: (file: File) => void
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0] && onUpload) {
+            setIsUploading(true);
+            try {
+                await onUpload(e.target.files[0]);
+            } finally {
+                setIsUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const triggerUpload = () => fileInputRef.current?.click();
 
     // Reset index se images mudar e atual for inválido
     useEffect(() => {
@@ -45,8 +63,28 @@ const ImageCarousel = ({
                 <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1">
                     {icon} {title}
                 </p>
-                <div className="h-28 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex items-center justify-center text-slate-700 text-xs text-center px-4">
-                    Sem print
+                <div
+                    className={`h-28 bg-slate-950/50 rounded-lg border border-slate-800/50 border-dashed flex flex-col items-center justify-center text-slate-700 text-xs text-center px-4 transition-colors ${onUpload ? 'cursor-pointer hover:border-cyan-500/50 hover:bg-slate-900/50' : ''}`}
+                    onClick={onUpload ? triggerUpload : undefined}
+                >
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
+
+                    {isUploading ? (
+                        <div className="animate-spin w-5 h-5 border-2 border-cyan-500 border-t-transparent rounded-full mb-2"></div>
+                    ) : onUpload ? (
+                        <>
+                            <Plus size={24} className="mb-2 opacity-50" />
+                            <span>Clique para adicionar print</span>
+                        </>
+                    ) : (
+                        <span>Sem print</span>
+                    )}
                 </div>
             </div>
         );
@@ -73,11 +111,36 @@ const ImageCarousel = ({
         <div className="flex-1 min-w-[200px]">
             <p className="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1 justify-between">
                 <span className="flex items-center gap-1">{icon} {title}</span>
-                {images.length > 1 && (
-                    <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-cyan-400">
-                        {currentIndex + 1}/{images.length}
-                    </span>
-                )}
+                <div className="flex gap-2">
+                    {onUpload && (
+                        <>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                            <button
+                                onClick={triggerUpload}
+                                disabled={isUploading}
+                                className="text-[10px] bg-slate-800 hover:bg-slate-700 px-1.5 py-0.5 rounded text-cyan-400 flex items-center gap-1 transition-colors"
+                                title="Adicionar imagem"
+                            >
+                                {isUploading ? (
+                                    <div className="animate-spin w-3 h-3 border-2 border-cyan-500 border-t-transparent rounded-full"></div>
+                                ) : (
+                                    <Plus size={10} />
+                                )}
+                            </button>
+                        </>
+                    )}
+                    {images.length > 1 && (
+                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-cyan-400">
+                            {currentIndex + 1}/{images.length}
+                        </span>
+                    )}
+                </div>
             </p>
 
             <div className="relative group aspect-video bg-slate-950 rounded-lg overflow-hidden border border-slate-800 hover:border-cyan-500/50 transition-colors">
@@ -321,6 +384,54 @@ export default function HistoryPage() {
         }
     }
 
+    // Função para upload de imagem
+    const handleUpload = async (file: File, recordId: string, field: 'print_noite' | 'print_manha' | 'print_resultado') => {
+        try {
+            const record = records.find(r => r.id === recordId);
+            if (!record) return;
+
+            const timestamp = Date.now();
+            const date = record.data;
+            const type = field.replace('print_', '');
+            const fileName = `${date}_${type}_${timestamp}_uploaded.${file.name.split('.').pop()}`;
+
+            // 1. Upload para o Storage
+            const { error: uploadError } = await supabase.storage
+                .from('prints')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('prints')
+                .getPublicUrl(fileName);
+
+            // 3. Atualizar no Banco
+            const currentImages = normalizeFiles(record[field]);
+            const newImages = [...currentImages, publicUrl];
+
+            const { error: dbError } = await supabase
+                .from('analises_diarias')
+                .update({ [field]: newImages })
+                .eq('id', recordId);
+
+            if (dbError) throw dbError;
+
+            // Update otimista (opcional, já temos realtime, mas o feedback visual imediato é bom)
+            setRecords(prev => prev.map(r => {
+                if (r.id === recordId) {
+                    return { ...r, [field]: newImages };
+                }
+                return r;
+            }));
+
+        } catch (error: any) {
+            console.error('Erro no upload:', error);
+            alert(`Erro ao enviar imagem: ${error.message}`);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
             <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -408,18 +519,21 @@ export default function HistoryPage() {
                                         title="MFC NOITE"
                                         icon={<Moon size={12} />}
                                         onDelete={(index) => deleteImage(record.id, 'print_noite', index)}
+                                        onUpload={(file) => handleUpload(file, record.id, 'print_noite')}
                                     />
                                     <ImageCarousel
                                         images={normalizeFiles(record.print_manha)}
                                         title={`MFC MANHÃ (${getNextDayFormatted(record.data)})`}
                                         icon={<Sun size={12} />}
                                         onDelete={(index) => deleteImage(record.id, 'print_manha', index)}
+                                        onUpload={(file) => handleUpload(file, record.id, 'print_manha')}
                                     />
                                     <ImageCarousel
                                         images={normalizeFiles(record.print_resultado)}
                                         title="RESULTADO"
                                         icon={<Trophy size={12} className="text-yellow-500" />}
                                         onDelete={(index) => deleteImage(record.id, 'print_resultado', index)}
+                                        onUpload={(file) => handleUpload(file, record.id, 'print_resultado')}
                                     />
                                 </div>
 
