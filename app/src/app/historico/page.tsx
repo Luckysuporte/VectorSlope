@@ -236,6 +236,25 @@ export default function HistoryPage() {
         return () => window.removeEventListener('focus', handleFocus);
     }, []);
 
+    // Realtime subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('realtime-history')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'analises_diarias' },
+                (payload) => {
+                    console.log('Alteração detectada em tempo real:', payload);
+                    fetchHistory();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
+
     const fetchHistory = async () => {
         try {
             const { data, error } = await supabase
