@@ -14,22 +14,39 @@ const SuggestedCurrency = () => {
         const fetchData = async () => {
             try {
                 // 1. Buscar análise de hoje ou a mais recente
-                const today = new Date().toISOString().split('T')[0];
+                // Usar data local (YYYY-MM-DD)
+                // const today = new Date().toLocaleDateString('en-CA');
+
+                // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
+                // Isso garante que se o usuário preencheu ontem, continua aparecendo hoje.
+                // E se preencher hoje à noite (20:30), já atualiza.
                 const { data: analysis, error } = await supabase
                     .from('analises_diarias')
                     .select('*')
-                    .eq('data', today)
+                    .order('data', { ascending: false })
+                    .limit(1)
                     .single();
 
                 if (error || !analysis) {
-                    console.log('Nenhuma análise encontrada para hoje ainda.');
+                    console.log('Nenhuma análise encontrada no histórico.');
                     setLoading(false);
                     return;
                 }
 
                 // 2. Se tiver análise, buscar padrões
                 if (analysis.slopes_json) {
-                    const matches = await findSimilarPatterns(analysis.slopes_json);
+                    let savedSlopes = analysis.slopes_json;
+                    if (typeof savedSlopes === 'string') {
+                        try {
+                            savedSlopes = JSON.parse(savedSlopes);
+                        } catch (e) {
+                            console.error("Erro ao parsear slopes para sugestão:", e);
+                            setLoading(false);
+                            return;
+                        }
+                    }
+
+                    const matches = await findSimilarPatterns(savedSlopes as Record<string, Record<string, string>>);
                     const result = getSuggestionFromPatterns(matches);
 
                     if (result) {
