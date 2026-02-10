@@ -20,11 +20,12 @@ const CurrencyStrengthMeter = () => {
 
     const fetchStrengthData = async () => {
         try {
-            const today = new Date().toISOString().split('T')[0];
+            // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
             const { data: analysis, error } = await supabase
                 .from('analises_diarias')
                 .select('slopes_json')
-                .eq('data', today)
+                .order('data', { ascending: false })
+                .limit(1)
                 .single();
 
             if (error || !analysis || !analysis.slopes_json) {
