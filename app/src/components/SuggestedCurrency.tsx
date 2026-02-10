@@ -5,10 +5,25 @@ import { supabase } from '@/lib/supabase';
 import { findSimilarPatterns, getSuggestionFromPatterns, PredictionResult } from '@/lib/patternAnalysis';
 import { Loader2 } from 'lucide-react';
 
+const STANDARD_PAIRS = [
+    'AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD',
+    'CADCHF', 'CADJPY',
+    'CHFJPY',
+    'EURAUD', 'EURCAD', 'EURCHF', 'EURGBP', 'EURJPY', 'EURNZD', 'EURUSD',
+    'GBPAUD', 'GBPCAD', 'GBPCHF', 'GBPJPY', 'GBPNZD', 'GBPUSD',
+    'NZDCAD', 'NZDCHF', 'NZDJPY', 'NZDUSD',
+    'USDCAD', 'USDCHF', 'USDJPY'
+];
+
+interface PairSuggestion {
+    pair: string;
+    action: 'COMPRA' | 'VENDA';
+}
+
 const SuggestedCurrency = () => {
     const [prediction, setPrediction] = useState<PredictionResult | null>(null);
     const [loading, setLoading] = useState(true);
-    const [pairs, setPairs] = useState<string[]>([]);
+    const [pairSuggestions, setPairSuggestions] = useState<PairSuggestion[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,12 +66,47 @@ const SuggestedCurrency = () => {
 
                     if (result) {
                         setPrediction(result);
-                        // Gerar pares sugeridos baseados na moeda
-                        const newPairs = ['AUD', 'CAD', 'CHF', 'EUR', 'GBP', 'NZD', 'USD', 'JPY']
-                            .filter(c => c !== result.currency)
-                            .map(c => `${c}${result.currency}`) // Simplificado
-                            .slice(0, 5);
-                        setPairs(newPairs);
+
+                        // Gerar pares com lógica de direção (Compra/Venda)
+                        const suggestions: PairSuggestion[] = [];
+                        const otherCurrencies = ['AUD', 'CAD', 'CHF', 'EUR', 'GBP', 'NZD', 'USD', 'JPY']
+                            .filter(c => c !== result.currency);
+
+                        otherCurrencies.forEach(other => {
+                            // Tentar formar o par padrão
+                            let pairName = '';
+                            let isBase = false;
+
+                            if (STANDARD_PAIRS.includes(`${result.currency}${other}`)) {
+                                pairName = `${result.currency}${other}`;
+                                isBase = true;
+                            } else if (STANDARD_PAIRS.includes(`${other}${result.currency}`)) {
+                                pairName = `${other}${result.currency}`;
+                                isBase = false;
+                            }
+
+                            if (pairName) {
+                                // Lógica de Força/Fraqueza
+                                // Se FORÇA (Compra da moeda base):
+                                //   - Base: Pair SOBE (Compra)
+                                //   - Quote: Pair DESCE (Venda)
+                                // Se FRAQUEZA (Venda da moeda base):
+                                //   - Base: Pair DESCE (Venda)
+                                //   - Quote: Pair SOBE (Compra)
+
+                                let action: 'COMPRA' | 'VENDA' = 'COMPRA';
+
+                                if (result.direction === 'COMPRA') { // Moeda forte
+                                    action = isBase ? 'COMPRA' : 'VENDA';
+                                } else { // Moeda fraca (VENDA)
+                                    action = isBase ? 'VENDA' : 'COMPRA';
+                                }
+
+                                suggestions.push({ pair: pairName, action });
+                            }
+                        });
+
+                        setPairSuggestions(suggestions.slice(0, 6));
                     }
                 }
             } catch (err) {
@@ -89,6 +139,10 @@ const SuggestedCurrency = () => {
         );
     }
 
+    // Tradução do conceito principal
+    const mainLabel = prediction.direction === 'COMPRA' ? 'FORÇA' : (prediction.direction === 'VENDA' ? 'FRAQUEZA' : 'NEUTRO');
+    const mainColorClass = prediction.direction === 'COMPRA' ? 'bg-green-500/20 text-green-400 border-green-500/30' : (prediction.direction === 'VENDA' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30');
+
     return (
         <div className="bg-slate-900/60 backdrop-blur-sm border border-cyan-500/20 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -100,14 +154,12 @@ const SuggestedCurrency = () => {
 
             <div className="text-center mb-6">
                 <h3 className="text-5xl font-bold text-white mb-3">{prediction.currency}</h3>
-                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border 
-                    ${prediction.direction === 'COMPRA' || prediction.confidence > 50 ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'}
-                `}>
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${mainColorClass}`}>
                     <span className="text-xs">
-                        {prediction.direction === 'COMPRA' || prediction.confidence > 50 ? '🚀' : '⚡'}
+                        {prediction.direction === 'COMPRA' ? '🚀' : (prediction.direction === 'VENDA' ? '📉' : '⚡')}
                     </span>
-                    <span className="text-sm font-semibold">
-                        {prediction.direction === 'NEUTRO' ? 'POTENCIAL' : prediction.direction}
+                    <span className="text-lg font-bold tracking-wider">
+                        {mainLabel}
                     </span>
                 </div>
             </div>
@@ -147,15 +199,19 @@ const SuggestedCurrency = () => {
             </div>
 
             <div className="space-y-1">
-                <p className="text-xs text-slate-400 mb-3">Pares Relacionados</p>
-                {pairs.map((pair) => (
-                    <div key={pair} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-800/30 transition-colors border border-transparent hover:border-cyan-500/20">
+                <p className="text-xs text-slate-400 mb-3 font-bold uppercase tracking-wider">Pares Relacionados</p>
+                {pairSuggestions.map((item) => (
+                    <div key={item.pair} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-slate-800/30 transition-colors border border-transparent hover:border-cyan-500/20">
                         <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50"></span>
-                            <span className="text-sm font-medium text-white">{pair}</span>
+                            <span className={`w-1.5 h-1.5 rounded-full shadow-lg ${item.action === 'COMPRA' ? 'bg-green-400 shadow-green-400/50' : 'bg-red-400 shadow-red-400/50'}`}></span>
+                            <span className="text-sm font-bold text-white">{item.pair}</span>
                         </div>
-                        <span className="text-xs font-semibold text-slate-400 bg-slate-500/10 px-3 py-1 rounded border border-slate-500/30">
-                            OBSERVAR
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded border 
+                            ${item.action === 'COMPRA'
+                                ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                                : 'bg-red-500/10 text-red-400 border-red-500/30'
+                            }`}>
+                            {item.action}
                         </span>
                     </div>
                 ))}
