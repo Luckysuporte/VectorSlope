@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Save, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import SimilarPatterns from '../components/SimilarPatterns';
+import SimilarPatterns from '../../components/SimilarPatterns';
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
 const TIMEFRAMES = ['MN1', 'W1', 'D1', 'H4', 'H1'];
