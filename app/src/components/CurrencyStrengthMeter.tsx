@@ -10,17 +10,51 @@ interface CurrencyData {
     value: number;
 }
 
-const CurrencyStrengthMeter = () => {
+interface CurrencyStrengthMeterProps {
+    customSlopes?: Record<string, Record<string, string>>;
+}
+
+const CurrencyStrengthMeter = ({ customSlopes }: CurrencyStrengthMeterProps) => {
     const [currencies, setCurrencies] = useState<CurrencyData[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchStrengthData();
-    }, []);
+        if (customSlopes) {
+            calculateStrength(customSlopes);
+            setLoading(false);
+        } else {
+            fetchStrengthData();
+        }
+    }, [customSlopes]);
+
+    const calculateStrength = (slopes: Record<string, Record<string, string>>) => {
+        const calculatedCurrencies: CurrencyData[] = [];
+        const targetCurrencies = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
+
+        targetCurrencies.forEach(curr => {
+            const currencySlopes = slopes[curr];
+            if (currencySlopes) {
+                const values = Object.values(currencySlopes).map(v => parseFloat(v)).filter(v => !isNaN(v));
+
+                if (values.length > 0) {
+                    const total = values.reduce((acc, val) => acc + val, 0);
+                    const avg = total / values.length;
+
+                    calculatedCurrencies.push({
+                        code: curr.substring(0, 2),
+                        name: curr,
+                        value: avg
+                    });
+                }
+            }
+        });
+
+        calculatedCurrencies.sort((a, b) => b.value - a.value);
+        setCurrencies(calculatedCurrencies);
+    };
 
     const fetchStrengthData = async () => {
         try {
-            // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
             const { data: analysis, error } = await supabase
                 .from('analises_diarias')
                 .select('slopes_json')
@@ -29,50 +63,20 @@ const CurrencyStrengthMeter = () => {
                 .single();
 
             if (error || !analysis || !analysis.slopes_json) {
-                // Se não tem dados, manter vazio ou mostrar mensagem
                 setLoading(false);
                 return;
             }
 
-            const slopes = analysis.slopes_json as Record<string, Record<string, string>>;
-            const calculatedCurrencies: CurrencyData[] = [];
-
-            // Lista de moedas esperadas
-            const targetCurrencies = ['USD', 'EUR', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD', 'NZD'];
-
-            targetCurrencies.forEach(curr => {
-                const currencySlopes = slopes[curr];
-                if (currencySlopes) {
-                    // Calcular média dos slopes
-                    const values = Object.values(currencySlopes).map(v => parseFloat(v)).filter(v => !isNaN(v));
-
-                    if (values.length > 0) {
-                        const total = values.reduce((acc, val) => acc + val, 0);
-                        const avg = total / values.length;
-
-                        calculatedCurrencies.push({
-                            code: curr.substring(0, 2), // Ex: US, EU
-                            name: curr,
-                            value: avg
-                        });
-                    }
-                }
-            });
-
-            // Ordenar do mais forte para o mais fraco
-            calculatedCurrencies.sort((a, b) => b.value - a.value);
-
-            setCurrencies(calculatedCurrencies);
+            calculateStrength(analysis.slopes_json as Record<string, Record<string, string>>);
 
         } catch (error) {
             console.error('Erro ao buscar força das moedas:', error);
-        } finally {
             setLoading(false);
         }
     };
 
     const getBarStyles = (value: number) => {
-        const width = Math.min(100, Math.abs(value) * 50); // Limitar a 100%
+        const width = Math.min(100, Math.abs(value) * 50);
         if (value >= 0) {
             return {
                 left: '50%',

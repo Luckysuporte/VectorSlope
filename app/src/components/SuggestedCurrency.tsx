@@ -20,7 +20,11 @@ interface PairSuggestion {
     action: 'COMPRA' | 'VENDA';
 }
 
-const SuggestedCurrency = () => {
+interface SuggestedCurrencyProps {
+    customSlopes?: Record<string, Record<string, string>>;
+}
+
+const SuggestedCurrency = ({ customSlopes }: SuggestedCurrencyProps) => {
     const [prediction, setPrediction] = useState<PredictionResult | null>(null);
     const [loading, setLoading] = useState(true);
     const [pairSuggestions, setPairSuggestions] = useState<PairSuggestion[]>([]);
@@ -28,40 +32,47 @@ const SuggestedCurrency = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Buscar análise de hoje ou a mais recente
-                // Usar data local (YYYY-MM-DD)
-                // const today = new Date().toLocaleDateString('en-CA');
+                let slopesToAnalyze: Record<string, Record<string, string>> | null = null;
 
-                // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
-                // Isso garante que se o usuário preencheu ontem, continua aparecendo hoje.
-                // E se preencher hoje à noite (20:30), já atualiza.
-                const { data: analysis, error } = await supabase
-                    .from('analises_diarias')
-                    .select('*')
-                    .order('data', { ascending: false })
-                    .limit(1)
-                    .single();
+                if (customSlopes) {
+                    slopesToAnalyze = customSlopes;
+                    // Se customSlopes tiver poucos dados (ex: vazio no inicio), podemos não mostrar nada ainda
+                    if (Object.keys(slopesToAnalyze).length === 0) {
+                        setPrediction(null);
+                        setPairSuggestions([]);
+                        setLoading(false);
+                        return;
+                    }
+                } else {
+                    // Fetch do banco (Analises Diarias)
+                    const { data: analysis, error } = await supabase
+                        .from('analises_diarias')
+                        .select('*')
+                        .order('data', { ascending: false })
+                        .limit(1)
+                        .single();
 
-                if (error || !analysis) {
-                    console.log('Nenhuma análise encontrada no histórico.');
-                    setLoading(false);
-                    return;
-                }
-
-                // 2. Se tiver análise, buscar padrões
-                if (analysis.slopes_json) {
-                    let savedSlopes = analysis.slopes_json;
-                    if (typeof savedSlopes === 'string') {
-                        try {
-                            savedSlopes = JSON.parse(savedSlopes);
-                        } catch (e) {
-                            console.error("Erro ao parsear slopes para sugestão:", e);
-                            setLoading(false);
-                            return;
-                        }
+                    if (error || !analysis) {
+                        setLoading(false);
+                        return;
                     }
 
-                    const matches = await findSimilarPatterns(savedSlopes as Record<string, Record<string, string>>);
+                    if (analysis.slopes_json) {
+                        let savedSlopes = analysis.slopes_json;
+                        if (typeof savedSlopes === 'string') {
+                            try {
+                                slopesToAnalyze = JSON.parse(savedSlopes);
+                            } catch (e) {
+                                console.error("Erro ao parsear slopes:", e);
+                            }
+                        } else {
+                            slopesToAnalyze = savedSlopes as Record<string, Record<string, string>>;
+                        }
+                    }
+                }
+
+                if (slopesToAnalyze) {
+                    const matches = await findSimilarPatterns(slopesToAnalyze);
                     const result = getSuggestionFromPatterns(matches);
 
                     if (result) {
@@ -117,7 +128,7 @@ const SuggestedCurrency = () => {
         };
 
         fetchData();
-    }, []);
+    }, [customSlopes]);
 
     if (loading) {
         return (
