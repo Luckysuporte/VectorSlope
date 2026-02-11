@@ -136,9 +136,25 @@ const ImageCarousel = ({
                         </>
                     )}
                     {images.length > 1 && (
-                        <span className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-cyan-400">
-                            {currentIndex + 1}/{images.length}
-                        </span>
+                        <div className="flex items-center gap-1 bg-slate-800/80 rounded border border-slate-700/50 px-1 py-0.5 ml-2">
+                            <button
+                                onClick={prevImage}
+                                className="p-1 text-cyan-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+                                title="Imagem anterior"
+                            >
+                                <ChevronLeft size={16} style={{ strokeWidth: 3 }} />
+                            </button>
+                            <span className="text-[11px] font-bold text-cyan-400 font-mono mx-1 min-w-[20px] text-center">
+                                {currentIndex + 1}/{images.length}
+                            </span>
+                            <button
+                                onClick={nextImage}
+                                className="p-1 text-cyan-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+                                title="Próxima imagem"
+                            >
+                                <ChevronRight size={16} style={{ strokeWidth: 3 }} />
+                            </button>
+                        </div>
                     )}
                 </div>
             </p>
