@@ -222,6 +222,27 @@ const UploadPanel = () => {
                 </div>
             </Link>
 
+            {/* Novo Botão - Laboratório */}
+            <Link href="/analise-extra" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="upload-item" style={{
+                    border: '1px solid rgba(168, 85, 247, 0.4)',
+                    background: 'rgba(168, 85, 247, 0.08)',
+                    cursor: 'pointer'
+                }}>
+                    <div className="icon" style={{
+                        background: 'linear-gradient(135deg, #a855f7, #ec4899)',
+                        boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)'
+                    }}>
+                        🧪
+                    </div>
+                    <div className="text">
+                        <strong style={{ color: '#d8b4fe', fontSize: '16px' }}>Laboratório</strong>
+                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Análise Experimental</span>
+                    </div>
+                    <div className="file-icon" style={{ color: '#d8b4fe', fontWeight: 'bold' }}>➔</div>
+                </div>
+            </Link>
+
             {/* MFC Noite - Clicável para Upload */}
             <div className="upload-item"
                 onClick={() => handleClick(fileInputNoite)}

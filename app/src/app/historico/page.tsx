@@ -301,32 +301,32 @@ const SlopesTable = ({ slopes }: { slopes: Record<string, any> }) => {
 };
 
 export default function HistoryPage() {
+    const [activeTab, setActiveTab] = useState<'official' | 'lab'>('official');
     const [records, setRecords] = useState<AnalysisRecord[]>([]);
+    const [extras, setExtras] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchHistory();
+        fetchExtras();
     }, []);
 
-    // Atualiza lista quando recebe foco (útil se voltar do painel)
+    // Atualiza lista quando recebe foco
     useEffect(() => {
-        const handleFocus = () => fetchHistory();
+        const handleFocus = () => {
+            fetchHistory();
+            fetchExtras();
+        };
         window.addEventListener('focus', handleFocus);
         return () => window.removeEventListener('focus', handleFocus);
     }, []);
 
-    // Realtime subscription
+    // Realtime subscription (simplificado para focar na tabela certa)
     useEffect(() => {
         const channel = supabase
             .channel('realtime-history')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'analises_diarias' },
-                (payload) => {
-                    console.log('Alteração detectada em tempo real:', payload);
-                    fetchHistory();
-                }
-            )
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'analises_diarias' }, () => fetchHistory())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'analises_extras' }, () => fetchExtras())
             .subscribe();
 
         return () => {
@@ -340,23 +340,36 @@ export default function HistoryPage() {
                 .from('analises_diarias')
                 .select('*')
                 .order('data', { ascending: false });
-
             if (error) throw error;
-            console.log('Dados do histórico:', data); // Log para debug
             setRecords(data || []);
-        } catch (error) {
-            console.error('Erro ao buscar histórico:', error);
-        } finally {
-            setLoading(false);
-        }
+        } catch (error) { console.error('Erro history:', error); } finally { setLoading(false); }
+    };
+
+    const fetchExtras = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('analises_extras')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setExtras(data || []);
+        } catch (error) { console.error('Erro extras:', error); }
     };
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return '';
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
     };
 
+    const formatDateTime = (timestamp: string) => {
+        return new Date(timestamp).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+    };
+
     const getNextDayFormatted = (dateString: string) => {
+        if (!dateString) return '';
         const [year, month, day] = dateString.split('-').map(Number);
         const date = new Date(year, month - 1, day);
         date.setDate(date.getDate() + 1);
@@ -368,89 +381,37 @@ export default function HistoryPage() {
         return Array.isArray(files) ? files : [files];
     };
 
-    // Função para excluir imagem
     const deleteImage = async (recordId: string, field: 'print_noite' | 'print_manha' | 'print_resultado', imageIndex: number) => {
         const record = records.find(r => r.id === recordId);
         if (!record) return;
-
         const currentImages = normalizeFiles(record[field]);
-        // Remove a imagem do array local
         const newImages = currentImages.filter((_, i) => i !== imageIndex);
-
-        // Atualiza UI otimisticamente
-        setRecords(prev => prev.map(r => {
-            if (r.id === recordId) {
-                return { ...r, [field]: newImages };
-            }
-            return r;
-        }));
-
-        // Atualiza no banco
+        setRecords(prev => prev.map(r => r.id === recordId ? { ...r, [field]: newImages } : r));
         try {
-            const { error } = await supabase
-                .from('analises_diarias')
-                .update({ [field]: newImages })
-                .eq('id', recordId);
+            await supabase.from('analises_diarias').update({ [field]: newImages }).eq('id', recordId);
+        } catch (err) { fetchHistory(); }
+    };
 
-            if (error) throw error;
-        } catch (err) {
-            console.error("Erro ao deletar imagem:", err);
-            alert("Erro ao excluir imagem. Recarregue a página.");
-            fetchHistory(); // Reverte UI em caso de erro
-        }
-    }
-
-    // Função para upload de imagem
     const handleUpload = async (file: File, recordId: string, field: 'print_noite' | 'print_manha' | 'print_resultado') => {
         try {
             const record = records.find(r => r.id === recordId);
             if (!record) return;
-
             const timestamp = Date.now();
             const date = record.data;
             const type = field.replace('print_', '');
             const fileName = `${date}_${type}_${timestamp}_uploaded.${file.name.split('.').pop()}`;
-
-            // 1. Upload para o Storage
-            const { error: uploadError } = await supabase.storage
-                .from('prints')
-                .upload(fileName, file);
-
-            if (uploadError) throw uploadError;
-
-            // 2. Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('prints')
-                .getPublicUrl(fileName);
-
-            // 3. Atualizar no Banco
+            await supabase.storage.from('prints').upload(fileName, file);
+            const { data: { publicUrl } } = supabase.storage.from('prints').getPublicUrl(fileName);
             const currentImages = normalizeFiles(record[field]);
             const newImages = [...currentImages, publicUrl];
-
-            const { error: dbError } = await supabase
-                .from('analises_diarias')
-                .update({ [field]: newImages })
-                .eq('id', recordId);
-
-            if (dbError) throw dbError;
-
-            // Update otimista (opcional, já temos realtime, mas o feedback visual imediato é bom)
-            setRecords(prev => prev.map(r => {
-                if (r.id === recordId) {
-                    return { ...r, [field]: newImages };
-                }
-                return r;
-            }));
-
-        } catch (error: any) {
-            console.error('Erro no upload:', error);
-            alert(`Erro ao enviar imagem: ${error.message}`);
-        }
+            await supabase.from('analises_diarias').update({ [field]: newImages }).eq('id', recordId);
+            setRecords(prev => prev.map(r => r.id === recordId ? { ...r, [field]: newImages } : r));
+        } catch (error: any) { alert(`Erro: ${error.message}`); }
     };
 
     return (
         <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
-            <header className="max-w-7xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-center gap-6">
+            <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
                         Galeria de Análises
@@ -467,126 +428,161 @@ export default function HistoryPage() {
                 </div>
             </header>
 
+            {/* Tabs */}
+            <div className="max-w-7xl mx-auto mb-8 flex gap-4 border-b border-slate-800">
+                <button
+                    onClick={() => setActiveTab('official')}
+                    className={`pb-4 px-4 font-bold text-sm transition-colors relative ${activeTab === 'official' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                    OFICIAL (ROTINA)
+                    {activeTab === 'official' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-cyan-400"></span>}
+                </button>
+                <button
+                    onClick={() => setActiveTab('lab')}
+                    className={`pb-4 px-4 font-bold text-sm transition-colors relative ${activeTab === 'lab' ? 'text-purple-400' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                    LABORATÓRIO (EXTRAS)
+                    {activeTab === 'lab' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-purple-400"></span>}
+                </button>
+            </div>
+
             <div className="max-w-7xl mx-auto">
                 {loading ? (
                     <div className="text-center py-20">
                         <div className="animate-spin w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full mx-auto mb-4"></div>
                         <p className="text-slate-500">Carregando histórico...</p>
                     </div>
-                ) : records.length === 0 ? (
-                    <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-slate-800">
-                        <HistoryIcon size={48} className="mx-auto text-slate-600 mb-4" />
-                        <h3 className="text-xl font-semibold text-slate-300">Nenhum registro encontrado</h3>
-                        <p className="text-slate-500 mt-2 mb-6">Comece fazendo uma nova análise no painel.</p>
-                        <Link href="/analise-diaria" className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-all">
-                            Criar Nova Análise
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-8">
-                        {records.map((record) => (
-                            <div key={record.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-900/10">
-                                {/* Cabeçalho do Card */}
-                                <div className="flex flex-wrap justify-between items-start mb-6 gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-cyan-400 font-bold text-lg shadow-inner">
-                                            {record.data.split('-')[2]}
+                ) : activeTab === 'official' ? (
+                    // Conteúdo Aba Oficial
+                    records.length === 0 ? (
+                        <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-slate-800">
+                            <HistoryIcon size={48} className="mx-auto text-slate-600 mb-4" />
+                            <h3 className="text-xl font-semibold text-slate-300">Nenhum registro oficial</h3>
+                            <p className="text-slate-500 mt-2 mb-6">Comece fazendo uma nova análise de rotina.</p>
+                            <Link href="/analise-diaria" className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl transition-all">
+                                Criar Nova Análise
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-8">
+                            {records.map((record) => (
+                                <div key={record.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 hover:border-cyan-500/30 transition-all shadow-lg hover:shadow-cyan-900/10">
+                                    {/* Cabeçalho do Card (Original) */}
+                                    <div className="flex flex-wrap justify-between items-start mb-6 gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-cyan-400 font-bold text-lg shadow-inner">
+                                                {record.data.split('-')[2]}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">{
+                                                    new Date(record.data).toLocaleDateString('pt-BR', { weekday: 'long' })
+                                                }</p>
+                                                <p className="text-slate-300 font-medium">{formatDate(record.data)}</p>
+                                            </div>
                                         </div>
+
+                                        {/* Info do Resultado */}
+                                        {record.moeda_vencedora ? (
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-right">
+                                                    <p className="text-xs text-slate-500 font-bold">VENCEDORA</p>
+                                                    <div className={`flex items-center gap-1 font-bold ${record.config_vencedora?.includes('FORÇA') ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {record.moeda_vencedora}
+                                                        <span className="text-lg">{record.config_vencedora?.includes('FORÇA') ? '🐂' : '🐻'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="h-8 w-px bg-slate-800"></div>
+                                                <div className="text-right">
+                                                    <p className="text-xs text-slate-500 font-bold">RESULTADO</p>
+                                                    <p className={`font-mono font-bold ${(record.lucro_real || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {(record.lucro_real || 0) > 0 ? '+' : ''}{record.lucro_real}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-slate-600 bg-slate-950 px-2 py-1 rounded border border-slate-800">
+                                                Resultado Pendente
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Prints Section */}
+                                    <div className="flex flex-col md:flex-row gap-4 mb-4 overflow-x-auto pb-2">
+                                        <ImageCarousel
+                                            images={normalizeFiles(record.print_noite)}
+                                            title="MFC NOITE"
+                                            icon={<Moon size={12} />}
+                                            onDelete={(index) => deleteImage(record.id, 'print_noite', index)}
+                                            onUpload={(file) => handleUpload(file, record.id, 'print_noite')}
+                                        />
+                                        <ImageCarousel
+                                            images={normalizeFiles(record.print_manha)}
+                                            title={`MFC MANHÃ (${getNextDayFormatted(record.data)})`}
+                                            icon={<Sun size={12} />}
+                                            onDelete={(index) => deleteImage(record.id, 'print_manha', index)}
+                                            onUpload={(file) => handleUpload(file, record.id, 'print_manha')}
+                                        />
+                                        <ImageCarousel
+                                            images={normalizeFiles(record.print_resultado)}
+                                            title="RESULTADO"
+                                            icon={<Trophy size={12} className="text-yellow-500" />}
+                                            onDelete={(index) => deleteImage(record.id, 'print_resultado', index)}
+                                            onUpload={(file) => handleUpload(file, record.id, 'print_resultado')}
+                                        />
+                                    </div>
+
+                                    {/* Tabela de Slopes */}
+                                    {record.slopes_json && (
+                                        <div className="relative">
+                                            <Link
+                                                href={`/analise-diaria?date=${record.data}`}
+                                                className="absolute right-0 top-4 z-10 flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors bg-slate-900/80 px-3 py-1.5 rounded-lg border border-cyan-500/20 hover:border-cyan-500/50"
+                                            >
+                                                <Edit size={14} />
+                                                EDITAR SLOPES
+                                            </Link>
+                                            {/* @ts-ignore - Supabase type safety workaround */}
+                                            <SlopesTable slopes={typeof record.slopes_json === 'string' ? JSON.parse(record.slopes_json) : record.slopes_json} />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )
+                ) : (
+                    // Conteúdo Aba Laboratório
+                    extras.length === 0 ? (
+                        <div className="text-center py-20 bg-slate-900/30 rounded-2xl border border-slate-800">
+                            <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
+                                <span className="text-2xl">🧪</span>
+                            </div>
+                            <h3 className="text-xl font-semibold text-slate-300">Laboratório Vazio</h3>
+                            <p className="text-slate-500 mt-2 mb-6">Nenhuma análise experimental registrada.</p>
+                            <Link href="/analise-extra" className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all">
+                                Criar Experimento
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-8">
+                            {extras.map((extra) => (
+                                <div key={extra.id} className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/30 transition-all shadow-lg">
+                                    <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">{
-                                                new Date(record.data).toLocaleDateString('pt-BR', { weekday: 'long' })
-                                            }</p>
-                                            <p className="text-slate-300 font-medium">{formatDate(record.data)}</p>
+                                            <p className="text-xs text-purple-400 font-bold uppercase tracking-wider">EXPERIMENTO</p>
+                                            <p className="text-slate-300 font-medium">{formatDateTime(extra.created_at)}</p>
+                                            {extra.description && <p className="text-sm text-slate-400 mt-1 italic">"{extra.description}"</p>}
                                         </div>
                                     </div>
 
-                                    {/* Info do Resultado */}
-                                    {record.moeda_vencedora ? (
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-right">
-                                                <p className="text-xs text-slate-500 font-bold">VENCEDORA</p>
-                                                <div className={`flex items-center gap-1 font-bold ${record.config_vencedora?.includes('FORÇA')
-                                                    ? 'text-green-400'
-                                                    : 'text-red-400'
-                                                    }`}>
-                                                    {record.moeda_vencedora}
-                                                    <span className="text-lg">{record.config_vencedora?.includes('FORÇA') ? '🐂' : '🐻'}</span>
-                                                </div>
-                                            </div>
-                                            <div className="h-8 w-px bg-slate-800"></div>
-                                            <div className="text-right">
-                                                <p className="text-xs text-slate-500 font-bold">RESULTADO</p>
-                                                <p className={`font-mono font-bold ${(record.lucro_real || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {(record.lucro_real || 0) > 0 ? '+' : ''}{record.lucro_real}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <span className="text-xs text-slate-600 bg-slate-950 px-2 py-1 rounded border border-slate-800">
-                                            Resultado Pendente
-                                        </span>
+                                    {/* Tabela de Slopes (Extra) */}
+                                    {extra.slopes_json && (
+                                        // @ts-ignore
+                                        <SlopesTable slopes={typeof extra.slopes_json === 'string' ? JSON.parse(extra.slopes_json) : extra.slopes_json} />
                                     )}
                                 </div>
-
-                                {/* Prints Section */}
-                                <div className="flex flex-col md:flex-row gap-4 mb-4 overflow-x-auto pb-2">
-                                    <ImageCarousel
-                                        images={normalizeFiles(record.print_noite)}
-                                        title="MFC NOITE"
-                                        icon={<Moon size={12} />}
-                                        onDelete={(index) => deleteImage(record.id, 'print_noite', index)}
-                                        onUpload={(file) => handleUpload(file, record.id, 'print_noite')}
-                                    />
-                                    <ImageCarousel
-                                        images={normalizeFiles(record.print_manha)}
-                                        title={`MFC MANHÃ (${getNextDayFormatted(record.data)})`}
-                                        icon={<Sun size={12} />}
-                                        onDelete={(index) => deleteImage(record.id, 'print_manha', index)}
-                                        onUpload={(file) => handleUpload(file, record.id, 'print_manha')}
-                                    />
-                                    <ImageCarousel
-                                        images={normalizeFiles(record.print_resultado)}
-                                        title="RESULTADO"
-                                        icon={<Trophy size={12} className="text-yellow-500" />}
-                                        onDelete={(index) => deleteImage(record.id, 'print_resultado', index)}
-                                        onUpload={(file) => handleUpload(file, record.id, 'print_resultado')}
-                                    />
-                                </div>
-
-                                {/* Tabela de Slopes (Dados da Análise) */}
-                                {(() => {
-                                    let slopesData = record.slopes_json;
-
-                                    // Parse robusto
-                                    if (typeof slopesData === 'string') {
-                                        try {
-                                            slopesData = JSON.parse(slopesData);
-                                        } catch (e) {
-                                            console.error('Falha no parse:', e);
-                                        }
-                                    }
-
-                                    // Só renderiza se tiver dados válidos e não vazios
-                                    if (slopesData && typeof slopesData === 'object' && Object.keys(slopesData).length > 0) {
-                                        return (
-                                            <div className="relative">
-                                                <Link
-                                                    href={`/analise-diaria?date=${record.data}`}
-                                                    className="absolute right-0 top-4 z-10 flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors bg-slate-900/80 px-3 py-1.5 rounded-lg border border-cyan-500/20 hover:border-cyan-500/50"
-                                                >
-                                                    <Edit size={14} />
-                                                    EDITAR SLOPES
-                                                </Link>
-                                                <SlopesTable slopes={slopesData} />
-                                            </div>
-                                        );
-                                    }
-
-                                    return null;
-                                })()}
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )
                 )}
             </div>
         </div>
