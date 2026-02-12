@@ -31,39 +31,20 @@ const SimilarPatterns = ({ currentSlopes }: SimilarPatternsProps) => {
                     setLoading(false);
                 }
             }
-            // 2. Se não receber props (Dashboard), busca do banco o dia de hoje
+            // 2. Se não receber props (Dashboard), busca do banco usando o service unificado
             else {
                 setLoading(true);
                 try {
-                    const { supabase } = await import('@/lib/supabase');
-                    // Alteração: Buscar o registro MAIS RECENTE, independente da data exata.
-                    // Isso mantém a consistência com "Moeda Sugerida" e "Força das Moedas".
-                    const { data: analysis, error } = await supabase
-                        .from('analises_diarias')
-                        .select('slopes_json')
-                        .order('data', { ascending: false })
-                        .limit(1)
-                        .single();
+                    const { fetchLatestAnalysis } = await import('@/services/analysisService');
+                    const analysis = await fetchLatestAnalysis();
 
-                    if (error || !analysis || !analysis.slopes_json) {
+                    if (!analysis) {
                         setMatches([]);
                         setLoading(false);
                         return;
                     }
 
-                    let savedSlopes = analysis.slopes_json;
-                    if (typeof savedSlopes === 'string') {
-                        try {
-                            savedSlopes = JSON.parse(savedSlopes);
-                        } catch (e) {
-                            console.error("Erro ao fazer parse de slopes_json:", e);
-                            setMatches([]);
-                            setLoading(false);
-                            return;
-                        }
-                    }
-
-                    const results = await findSimilarPatterns(savedSlopes as Record<string, Record<string, string>>);
+                    const results = await findSimilarPatterns(analysis.slopes);
                     setMatches(results);
 
                 } catch (error) {

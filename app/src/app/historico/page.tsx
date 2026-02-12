@@ -409,6 +409,24 @@ export default function HistoryPage() {
         } catch (error: any) { alert(`Erro: ${error.message}`); }
     };
 
+    const deleteExtra = async (id: string) => {
+        if (!confirm('Tem certeza que deseja excluir este experimento?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('analises_extras')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setExtras(prev => prev.filter(item => item.id !== id));
+        } catch (error) {
+            console.error('Erro ao excluir:', error);
+            alert('Erro ao excluir experimento.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-950 text-white p-6 md:p-12">
             <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -572,6 +590,13 @@ export default function HistoryPage() {
                                             <p className="text-slate-300 font-medium">{formatDateTime(extra.created_at)}</p>
                                             {extra.description && <p className="text-sm text-slate-400 mt-1 italic">"{extra.description}"</p>}
                                         </div>
+                                        <button
+                                            onClick={() => deleteExtra(extra.id)}
+                                            className="text-slate-500 hover:text-red-400 transition-colors p-2 hover:bg-red-500/10 rounded-lg"
+                                            title="Excluir Experimento"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </div>
 
                                     {/* Tabela de Slopes (Extra) */}

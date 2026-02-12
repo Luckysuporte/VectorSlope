@@ -75,7 +75,8 @@ function DailyAnalysisContent() {
                 .from('analises_diarias')
                 .upsert({
                     data: date,
-                    slopes_json: slopes
+                    slopes_json: slopes,
+                    updated_at: new Date().toISOString()
                 }, { onConflict: 'data' });
 
             if (error) throw error;

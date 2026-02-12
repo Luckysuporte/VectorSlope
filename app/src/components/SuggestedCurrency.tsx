@@ -44,31 +44,16 @@ const SuggestedCurrency = ({ customSlopes }: SuggestedCurrencyProps) => {
                         return;
                     }
                 } else {
-                    // Fetch do banco (Analises Diarias)
-                    const { data: analysis, error } = await supabase
-                        .from('analises_diarias')
-                        .select('*')
-                        .order('data', { ascending: false })
-                        .limit(1)
-                        .single();
+                    // Fetch do banco (Analises Diarias + Extras)
+                    const { fetchLatestAnalysis } = await import('@/services/analysisService');
+                    const analysis = await fetchLatestAnalysis();
 
-                    if (error || !analysis) {
+                    if (!analysis) {
                         setLoading(false);
                         return;
                     }
 
-                    if (analysis.slopes_json) {
-                        let savedSlopes = analysis.slopes_json;
-                        if (typeof savedSlopes === 'string') {
-                            try {
-                                slopesToAnalyze = JSON.parse(savedSlopes);
-                            } catch (e) {
-                                console.error("Erro ao parsear slopes:", e);
-                            }
-                        } else {
-                            slopesToAnalyze = savedSlopes as Record<string, Record<string, string>>;
-                        }
-                    }
+                    slopesToAnalyze = analysis.slopes;
                 }
 
                 if (slopesToAnalyze) {

@@ -55,19 +55,15 @@ const CurrencyStrengthMeter = ({ customSlopes }: CurrencyStrengthMeterProps) => 
 
     const fetchStrengthData = async () => {
         try {
-            const { data: analysis, error } = await supabase
-                .from('analises_diarias')
-                .select('slopes_json')
-                .order('data', { ascending: false })
-                .limit(1)
-                .single();
+            const { fetchLatestAnalysis } = await import('@/services/analysisService');
+            const analysis = await fetchLatestAnalysis();
 
-            if (error || !analysis || !analysis.slopes_json) {
+            if (!analysis) {
                 setLoading(false);
                 return;
             }
 
-            calculateStrength(analysis.slopes_json as Record<string, Record<string, string>>);
+            calculateStrength(analysis.slopes);
 
         } catch (error) {
             console.error('Erro ao buscar força das moedas:', error);
