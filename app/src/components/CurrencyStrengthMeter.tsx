@@ -64,6 +64,7 @@ const CurrencyStrengthMeter = ({ customSlopes }: CurrencyStrengthMeterProps) => 
             }
 
             calculateStrength(analysis.slopes);
+            setLoading(false);
 
         } catch (error) {
             console.error('Erro ao buscar força das moedas:', error);
